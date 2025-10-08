@@ -62,10 +62,7 @@ const Goals = () => {
       const response = await goalsAPI.getAll();
       setGoals(response.data);
     } catch (error) {
-      // Demo mode - use local storage
-      const savedGoals = JSON.parse(localStorage.getItem('goals') || '[]');
-      setGoals(savedGoals);
-      console.log('Using demo mode - goals stored locally');
+      toast.error('Failed to fetch goals');
     } finally {
       setLoading(false);
     }
@@ -86,31 +83,7 @@ const Goals = () => {
       setFormData({ title: '', description: '', deadline: '', progress: 0, type: 'short-term' });
       fetchGoals();
     } catch (error) {
-      // Demo mode - save to local storage
-      const savedGoals = JSON.parse(localStorage.getItem('goals') || '[]');
-      const newGoal = {
-        _id: Date.now().toString(),
-        ...formData,
-        completed: false,
-        createdAt: new Date().toISOString()
-      };
-      
-      if (editingGoal) {
-        const updatedGoals = savedGoals.map(goal => 
-          goal._id === editingGoal._id ? { ...goal, ...formData } : goal
-        );
-        localStorage.setItem('goals', JSON.stringify(updatedGoals));
-        toast.success('Goal updated successfully (Demo Mode)');
-      } else {
-        savedGoals.push(newGoal);
-        localStorage.setItem('goals', JSON.stringify(savedGoals));
-        toast.success('Goal created successfully (Demo Mode)');
-      }
-      
-      setShowModal(false);
-      setEditingGoal(null);
-      setFormData({ title: '', description: '', deadline: '', progress: 0, type: 'short-term' });
-      fetchGoals();
+      toast.error('Failed to save goal');
     }
   };
 
@@ -133,12 +106,7 @@ const Goals = () => {
         toast.success('Goal deleted successfully');
         fetchGoals();
       } catch (error) {
-        // Demo mode - delete from local storage
-        const savedGoals = JSON.parse(localStorage.getItem('goals') || '[]');
-        const updatedGoals = savedGoals.filter(goal => goal._id !== id);
-        localStorage.setItem('goals', JSON.stringify(updatedGoals));
-        toast.success('Goal deleted successfully (Demo Mode)');
-        fetchGoals();
+        toast.error('Failed to delete goal');
       }
     }
   };
@@ -150,14 +118,7 @@ const Goals = () => {
       toast.success('Progress updated');
       fetchGoals();
     } catch (error) {
-      // Demo mode - update in local storage
-      const savedGoals = JSON.parse(localStorage.getItem('goals') || '[]');
-      const updatedGoals = savedGoals.map(goal => 
-        goal._id === id ? { ...goal, progress, completed: progress >= 100 } : goal
-      );
-      localStorage.setItem('goals', JSON.stringify(updatedGoals));
-      toast.success('Progress updated (Demo Mode)');
-      fetchGoals();
+      toast.error('Failed to update progress');
     }
   };
 

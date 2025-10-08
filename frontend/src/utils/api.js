@@ -44,3 +44,19 @@ export const usersAPI = {
   updateProfile: (data) => axios.put('/users/profile', data),
   updatePreferences: (data) => axios.put('/users/preferences', data)
 };
+
+// Notes API
+export const notesAPI = {
+  getAll: () => axios.get('/notes'),
+  create: (data) => axios.post('/notes', data),
+  update: (id, data) => axios.put(`/notes/${id}`, data),
+  delete: (id) => axios.delete(`/notes/${id}`)
+};
+
+// Alarms API
+export const alarmsAPI = {
+  getAll: () => axios.get('/alarms'),
+  create: (data) => axios.post('/alarms', data),
+  update: (id, data) => axios.put(`/alarms/${id}`, data),
+  delete: (id) => axios.delete(`/alarms/${id}`)
+};

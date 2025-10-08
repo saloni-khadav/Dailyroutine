@@ -1,19 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { tasksAPI, goalsAPI } from '../utils/api';
 import { CheckSquare, Target, Calendar, TrendingUp, BookOpen, Plus, Clock, ArrowRight, Zap, Star, Award, Users } from 'lucide-react';
+import clndr from '../images/clndr.png';
+import t1 from '../images/t1.png';
+import goal from '../images/goal.png';
+import d2 from '../images/d2.png';
+import p1 from '../images/p1.png';
+import t from '../images/t.png';
+import w1 from '../images/w1.jpg'
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
-    tasks: { total: 12, completed: 8, pending: 4 },
-    goals: { total: 5, completed: 2 }
+    tasks: { total: 0, completed: 0, pending: 0 },
+    goals: { total: 0, completed: 0 }
   });
-  const [recentTasks] = useState([
-    { _id: '1', title: 'Complete project proposal', dueDate: new Date(), status: 'in-progress', priority: 'high' },
-    { _id: '2', title: 'Review team feedback', dueDate: new Date(), status: 'pending', priority: 'medium' },
-    { _id: '3', title: 'Update documentation', dueDate: new Date(), status: 'completed', priority: 'low' }
-  ]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [tasksRes, goalsRes] = await Promise.all([
+        tasksAPI.getAll(),
+        goalsAPI.getAll()
+      ]);
+      
+      const tasks = tasksRes.data;
+      const goals = goalsRes.data;
+      
+      const completedTasks = tasks.filter(task => task.status === 'completed').length;
+      const completedGoals = goals.filter(goal => goal.completed).length;
+      
+      setStats({
+        tasks: {
+          total: tasks.length,
+          completed: completedTasks,
+          pending: tasks.length - completedTasks
+        },
+        goals: {
+          total: goals.length,
+          completed: completedGoals
+        }
+      });
+      
+      // Get recent tasks (last 5)
+      const sortedTasks = tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setRecentTasks(sortedTasks.slice(0, 5));
+      
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+  const [recentTasks, setRecentTasks] = useState([]);
 
   const quickActions = [
     { 
@@ -22,7 +74,7 @@ const Dashboard = () => {
       link: '/tasks', 
       color: 'bg-blue-50 text-blue-600 border-blue-100',
       description: 'Create a new task',
-      image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=300&h=200&fit=crop&crop=center'
+      image: t1,
     },
     { 
       title: 'Set New Goal', 
@@ -30,7 +82,7 @@ const Dashboard = () => {
       link: '/goals', 
       color: 'bg-green-50 text-green-600 border-green-100',
       description: 'Define your milestone',
-      image: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=300&h=200&fit=crop&crop=center'
+      image: goal,
     },
     { 
       title: 'View Calendar', 
@@ -38,7 +90,7 @@ const Dashboard = () => {
       link: '/calendar', 
       color: 'bg-purple-50 text-purple-600 border-purple-100',
       description: 'Check your schedule',
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop&crop=center'
+      image: clndr,
     },
     { 
       title: 'View Progress', 
@@ -46,7 +98,7 @@ const Dashboard = () => {
       link: '/progress', 
       color: 'bg-orange-50 text-orange-600 border-orange-100',
       description: 'Track your analytics',
-      image: 'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=300&h=200&fit=crop&crop=center'
+      image: p1,
     },
     { 
       title: 'Write Journal', 
@@ -54,7 +106,7 @@ const Dashboard = () => {
       link: '/diary', 
       color: 'bg-pink-50 text-pink-600 border-pink-100',
       description: 'Capture your thoughts',
-      image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=300&h=200&fit=crop&crop=center'
+      image: d2,
     }
   ];
 
@@ -88,7 +140,7 @@ const Dashboard = () => {
     },
     {
       title: 'Success Rate',
-      value: `${Math.round((stats.tasks.completed / stats.tasks.total) * 100)}%`,
+      value: stats.tasks.total > 0 ? `${Math.round((stats.tasks.completed / stats.tasks.total) * 100)}%` : '0%',
       icon: <TrendingUp className="w-6 h-6" />,
       color: 'bg-orange-50 text-orange-600 border-orange-100',
       change: '+15%',
@@ -98,16 +150,16 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pt-16">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-16">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Welcome Section with Image */}
         <div className="mb-10">
           <div className="grid lg:grid-cols-3 gap-8 items-center">
             <div className="lg:col-span-2">
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                Good morning, {user?.name}! 👋
+              <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
+                {getGreeting()}, {user?.name}! 👋
               </h1>
-              <p className="text-lg text-gray-600 mb-4">
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
                 Ready to make today productive? Here's your overview.
               </p>
               <div className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm w-fit">
@@ -120,7 +172,7 @@ const Dashboard = () => {
             <div className="lg:col-span-1">
               <div className="relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&h=300&fit=crop&crop=center" 
+                  src={w1}
                   alt="Productivity"
                   className="w-full h-48 object-cover rounded-3xl shadow-lg"
                 />
@@ -134,6 +186,17 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Cards */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 animate-pulse">
+                <div className="h-12 bg-gray-200 rounded mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {statCards.map((card, index) => (
             <div
@@ -158,13 +221,14 @@ const Dashboard = () => {
             </div>
           ))}
         </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Quick Actions with Images */}
           <div className="lg:col-span-1">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 p-8 shadow-lg">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Quick Actions</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Quick Actions</h2>
                 <Zap className="w-6 h-6 text-yellow-500" />
               </div>
               
@@ -201,7 +265,7 @@ const Dashboard = () => {
           <div className="lg:col-span-2">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 p-8 shadow-lg">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Recent Tasks</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Recent Tasks</h2>
                 <Link
                   to="/tasks"
                   className="flex items-center text-blue-600 hover:text-blue-700 font-medium group"
@@ -309,3 +373,6 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
+// https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&h=300&fit=crop&crop=center" 

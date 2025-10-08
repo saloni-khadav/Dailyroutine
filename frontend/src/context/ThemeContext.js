@@ -18,16 +18,20 @@ export const ThemeProvider = ({ children }) => {
   }, [user]);
 
   useEffect(() => {
+    console.log('Theme changed to:', theme);
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
+      console.log('Added dark class to document');
     } else {
       document.documentElement.classList.remove('dark');
+      console.log('Removed dark class from document');
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
 
   const toggleTheme = async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
+    console.log('Toggling theme from', theme, 'to', newTheme);
     setTheme(newTheme);
 
     if (user) {

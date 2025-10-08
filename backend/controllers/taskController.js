@@ -3,7 +3,7 @@ const Task = require('../models/Task');
 const getTasks = async (req, res) => {
   try {
     const { status, priority, sortBy = 'dueDate' } = req.query;
-    const filter = {};
+    const filter = { userId: req.user._id };
     
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
@@ -17,14 +17,16 @@ const getTasks = async (req, res) => {
 
 const createTask = async (req, res) => {
   try {
-    const { title, description, dueDate, priority } = req.body;
+    const { title, description, dueDate, startTime, endTime, priority } = req.body;
     
     const task = new Task({
       title,
       description,
       dueDate,
+      startTime,
+      endTime,
       priority,
-      userId: '507f1f77bcf86cd799439011'
+      userId: req.user._id
     });
 
     await task.save();
@@ -69,6 +71,9 @@ const deleteTask = async (req, res) => {
 const getTaskStats = async (req, res) => {
   try {
     const stats = await Task.aggregate([
+      {
+        $match: { userId: req.user._id }
+      },
       {
         $group: {
           _id: '$status',

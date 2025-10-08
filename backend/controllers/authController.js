@@ -16,13 +16,13 @@ const register = async (req, res) => {
     const { name, email, password } = req.body;
 
     // Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
     // Create new user
-    user = new User({ name, email, password });
+    const user = new User({ name, email, password });
     await user.save();
 
     const token = generateToken(user._id);
@@ -51,7 +51,7 @@ const login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Check if user exists
+    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
@@ -82,7 +82,8 @@ const login = async (req, res) => {
 
 const getMe = async (req, res) => {
   try {
-    res.json({ user: req.user });
+    const user = await User.findById(req.user._id).select('-password');
+    res.json({ user });
   } catch (error) {
     console.error('Get me error:', error);
     res.status(500).json({ message: 'Server error' });
