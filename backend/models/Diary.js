@@ -15,6 +15,22 @@ const diarySchema = new mongoose.Schema({
     enum: ['excellent', 'good', 'okay', 'bad', 'terrible'],
     default: 'okay'
   },
+  emoji: {
+    type: String,
+    default: '😐'
+  },
+  textColor: {
+    type: String,
+    default: '#374151'
+  },
+  textSize: {
+    type: Number,
+    default: 16
+  },
+  image: {
+    type: String,
+    default: ''
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
