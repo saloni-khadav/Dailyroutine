@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -20,15 +20,19 @@ import Progress from './pages/Progress';
 import Diary from './pages/Diary';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import Alarms from './pages/Alarms';
 
 function AppContent() {
   const { user } = useAuth();
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
+  const showSidebar = user && !isLandingPage;
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Navbar />
-      {user && <Sidebar />}
-      <div className={user ? 'ml-64' : ''}>
+      {showSidebar && <Sidebar />}
+      <div className={showSidebar ? 'ml-64' : ''}>
         <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Landing />} />
@@ -76,6 +80,11 @@ function AppContent() {
                   <Settings />
                 </ProtectedRoute>
               } />
+              <Route path="/alarms" element={
+                <ProtectedRoute>
+                  <Alarms />
+                </ProtectedRoute>
+              } />
               
               {/* Catch all route */}
               <Route path="*" element={<Navigate to="/" replace />} />
@@ -86,10 +95,6 @@ function AppContent() {
         position="top-right"
         toastOptions={{
           duration: 4000,
-          style: {
-            background: 'var(--toast-bg)',
-            color: 'var(--toast-color)',
-          },
         }}
       />
     </div>

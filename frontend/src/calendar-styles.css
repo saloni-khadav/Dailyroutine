@@ -71,9 +71,26 @@
 }
 
 .calendar-large .react-calendar__navigation button:hover {
+  background: #e2e8f0 !important;
+  transform: translateY(-2px) !important;
+}
+
+.calendar-large .react-calendar__navigation__label {
   background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
   color: white !important;
-  transform: translateY(-2px) !important;
+}
+
+.calendar-large .react-calendar__navigation__label:hover {
+  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+}
+
+.calendar-large .react-calendar__navigation button.react-calendar__navigation__label {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+  color: white !important;
+}
+
+.calendar-large .react-calendar__navigation button.react-calendar__navigation__label:hover {
+  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
 }
 
 .calendar-large .react-calendar__month-view__weekdays {

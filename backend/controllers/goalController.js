@@ -11,12 +11,14 @@ const getGoals = async (req, res) => {
 
 const createGoal = async (req, res) => {
   try {
-    const { title, description, deadline } = req.body;
+    const { title, description, deadline, progress = 0, type = 'short-term' } = req.body;
     
     const goal = new Goal({
       title,
       description,
       deadline,
+      progress,
+      type,
       userId: req.user._id
     });
 
@@ -29,8 +31,8 @@ const createGoal = async (req, res) => {
 
 const updateGoal = async (req, res) => {
   try {
-    const goal = await Goal.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user._id },
+    const goal = await Goal.findByIdAndUpdate(
+      req.params.id,
       req.body,
       { new: true }
     );
@@ -47,10 +49,7 @@ const updateGoal = async (req, res) => {
 
 const deleteGoal = async (req, res) => {
   try {
-    const goal = await Goal.findOneAndDelete({
-      _id: req.params.id,
-      userId: req.user._id
-    });
+    const goal = await Goal.findByIdAndDelete(req.params.id);
 
     if (!goal) {
       return res.status(404).json({ message: 'Goal not found' });

@@ -17,6 +17,8 @@ const Tasks = () => {
     title: '',
     description: '',
     dueDate: '',
+    startTime: '',
+    endTime: '',
     priority: 'medium'
   });
 
@@ -47,7 +49,7 @@ const Tasks = () => {
       }
       setShowModal(false);
       setEditingTask(null);
-      setFormData({ title: '', description: '', dueDate: '', priority: 'medium' });
+      setFormData({ title: '', description: '', dueDate: '', startTime: '', endTime: '', priority: 'medium' });
       fetchTasks();
     } catch (error) {
       toast.error('Failed to save task');
@@ -60,6 +62,8 @@ const Tasks = () => {
       title: task.title,
       description: task.description,
       dueDate: task.dueDate.split('T')[0],
+      startTime: task.startTime || '',
+      endTime: task.endTime || '',
       priority: task.priority
     });
     setShowModal(true);
@@ -268,6 +272,30 @@ const Tasks = () => {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Start Time
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      End Time
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.endTime}
+                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Priority
@@ -288,7 +316,7 @@ const Tasks = () => {
                     onClick={() => {
                       setShowModal(false);
                       setEditingTask(null);
-                      setFormData({ title: '', description: '', dueDate: '', priority: 'medium' });
+                      setFormData({ title: '', description: '', dueDate: '', startTime: '', endTime: '', priority: 'medium' });
                     }}
                     className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                   >

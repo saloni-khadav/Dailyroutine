@@ -13,24 +13,27 @@ const register = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    // Demo mode - return mock user
     const { name, email, password } = req.body;
-    const mockUser = {
-      _id: 'demo-user-id',
-      name,
-      email,
-      preferences: { theme: 'light', notifications: true }
-    };
 
-    const token = generateToken(mockUser._id);
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Create new user
+    const user = new User({ name, email, password });
+    await user.save();
+
+    const token = generateToken(user._id);
 
     res.status(201).json({
       token,
       user: {
-        id: mockUser._id,
-        name: mockUser.name,
-        email: mockUser.email,
-        preferences: mockUser.preferences
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        preferences: user.preferences
       }
     });
   } catch (error) {
@@ -45,24 +48,29 @@ const login = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    // Demo mode - return mock user
     const { email, password } = req.body;
-    const mockUser = {
-      _id: 'demo-user-id',
-      name: 'Demo User',
-      email,
-      preferences: { theme: 'light', notifications: true }
-    };
 
-    const token = generateToken(mockUser._id);
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const token = generateToken(user._id);
 
     res.json({
       token,
       user: {
-        id: mockUser._id,
-        name: mockUser.name,
-        email: mockUser.email,
-        preferences: mockUser.preferences
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        preferences: user.preferences
       }
     });
   } catch (error) {
@@ -72,15 +80,8 @@ const login = async (req, res) => {
 
 const getMe = async (req, res) => {
   try {
-    // Demo mode - return mock user
-    const mockUser = {
-      id: 'demo-user-id',
-      name: 'Demo User',
-      email: 'demo@example.com',
-      preferences: { theme: 'light', notifications: true }
-    };
-    
-    res.json({ user: mockUser });
+    const user = await User.findById(req.user._id).select('-password');
+    res.json({ user });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

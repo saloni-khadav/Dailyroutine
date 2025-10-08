@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
-import { tasksAPI, goalsAPI } from '../utils/api';
+import { tasksAPI, goalsAPI, notesAPI } from '../utils/api';
 import { Calendar as CalendarIcon, CheckSquare, Target, Plus, Edit, Trash2, StickyNote } from 'lucide-react';
 import toast from 'react-hot-toast';
 import 'react-calendar/dist/Calendar.css';
@@ -32,24 +32,16 @@ const CalendarPage = () => {
 
   const fetchData = async () => {
     try {
-      const [tasksRes, goalsRes] = await Promise.all([
+      const [tasksRes, goalsRes, notesRes] = await Promise.all([
         tasksAPI.getAll(),
-        goalsAPI.getAll()
+        goalsAPI.getAll(),
+        notesAPI.getAll()
       ]);
       setTasks(tasksRes.data);
       setGoals(goalsRes.data);
-      
-      // Load notes from localStorage
-      const savedNotes = JSON.parse(localStorage.getItem('calendar-notes') || '[]');
-      setNotes(savedNotes);
+      setNotes(notesRes.data);
     } catch (error) {
-      // Demo mode
-      const savedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-      const savedGoals = JSON.parse(localStorage.getItem('goals') || '[]');
-      const savedNotes = JSON.parse(localStorage.getItem('calendar-notes') || '[]');
-      setTasks(savedTasks);
-      setGoals(savedGoals);
-      setNotes(savedNotes);
+      toast.error('Failed to fetch data');
     } finally {
       setLoading(false);
     }
@@ -78,32 +70,23 @@ const CalendarPage = () => {
     setSelectedDateNotes(dayNotes);
   };
 
-  const handleNoteSubmit = (e) => {
+  const handleNoteSubmit = async (e) => {
     e.preventDefault();
-    const savedNotes = JSON.parse(localStorage.getItem('calendar-notes') || '[]');
-    
-    if (editingNote) {
-      const updatedNotes = savedNotes.map(note => 
-        note.id === editingNote.id ? { ...noteFormData, id: editingNote.id } : note
-      );
-      localStorage.setItem('calendar-notes', JSON.stringify(updatedNotes));
-      setNotes(updatedNotes);
-      toast.success('Note updated successfully');
-    } else {
-      const newNote = {
-        ...noteFormData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString()
-      };
-      savedNotes.push(newNote);
-      localStorage.setItem('calendar-notes', JSON.stringify(savedNotes));
-      setNotes(savedNotes);
-      toast.success('Note added successfully');
+    try {
+      if (editingNote) {
+        await notesAPI.update(editingNote._id, noteFormData);
+        toast.success('Note updated successfully');
+      } else {
+        await notesAPI.create(noteFormData);
+        toast.success('Note added successfully');
+      }
+      setShowNoteModal(false);
+      setEditingNote(null);
+      setNoteFormData({ title: '', content: '', date: '' });
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to save note');
     }
-    
-    setShowNoteModal(false);
-    setEditingNote(null);
-    setNoteFormData({ title: '', content: '', date: '' });
   };
 
   const handleEditNote = (note) => {
@@ -111,18 +94,20 @@ const CalendarPage = () => {
     setNoteFormData({
       title: note.title,
       content: note.content,
-      date: note.date
+      date: note.date.split('T')[0]
     });
     setShowNoteModal(true);
   };
 
-  const handleDeleteNote = (noteId) => {
+  const handleDeleteNote = async (noteId) => {
     if (window.confirm('Are you sure you want to delete this note?')) {
-      const savedNotes = JSON.parse(localStorage.getItem('calendar-notes') || '[]');
-      const updatedNotes = savedNotes.filter(note => note.id !== noteId);
-      localStorage.setItem('calendar-notes', JSON.stringify(updatedNotes));
-      setNotes(updatedNotes);
-      toast.success('Note deleted successfully');
+      try {
+        await notesAPI.delete(noteId);
+        toast.success('Note deleted successfully');
+        fetchData();
+      } catch (error) {
+        toast.error('Failed to delete note');
+      }
     }
   };
 
@@ -163,16 +148,10 @@ const CalendarPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pt-16">
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-            Calendar
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> & Notes</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Organize your schedule and capture important notes
-          </p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Calendar</h1>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
@@ -201,7 +180,12 @@ const CalendarPage = () => {
                 </h2>
                 <button
                   onClick={() => {
-                    setNoteFormData({ title: '', content: '', date: date.toISOString().split('T')[0] });
+                    const selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                    setNoteFormData({ 
+                      title: '', 
+                      content: '', 
+                      date: selectedDate.toISOString().split('T')[0] 
+                    });
                     setShowNoteModal(true);
                   }}
                   className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg"
@@ -213,7 +197,7 @@ const CalendarPage = () => {
               {selectedDateNotes.length > 0 ? (
                 <div className="space-y-3">
                   {selectedDateNotes.map((note) => (
-                    <div key={note.id} className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <div key={note._id} className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-800 mb-2">{note.title}</h3>
@@ -227,7 +211,7 @@ const CalendarPage = () => {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteNote(note.id)}
+                            onClick={() => handleDeleteNote(note._id)}
                             className="p-1 text-gray-400 hover:text-red-600 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -321,29 +305,19 @@ const CalendarPage = () => {
                 <div className="flex justify-between items-center p-3 bg-blue-50 rounded-xl">
                   <span className="text-gray-700 font-medium">📋 Total Tasks</span>
                   <span className="font-bold text-blue-600 text-lg">
-                    {tasks.filter(task => 
-                      new Date(task.dueDate).getMonth() === date.getMonth() &&
-                      new Date(task.dueDate).getFullYear() === date.getFullYear()
-                    ).length}
+                    {tasks.length}
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl">
                   <span className="text-gray-700 font-medium">🎯 Total Goals</span>
                   <span className="font-bold text-green-600 text-lg">
-                    {goals.filter(goal => 
-                      new Date(goal.deadline).getMonth() === date.getMonth() &&
-                      new Date(goal.deadline).getFullYear() === date.getFullYear()
-                    ).length}
+                    {goals.length}
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-purple-50 rounded-xl">
                   <span className="text-gray-700 font-medium">✅ Completed</span>
                   <span className="font-bold text-purple-600 text-lg">
-                    {tasks.filter(task => 
-                      task.status === 'completed' &&
-                      new Date(task.dueDate).getMonth() === date.getMonth() &&
-                      new Date(task.dueDate).getFullYear() === date.getFullYear()
-                    ).length}
+                    {tasks.filter(task => task.status === 'completed').length}
                   </span>
                 </div>
               </div>
@@ -383,6 +357,18 @@ const CalendarPage = () => {
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:border-blue-500 focus:outline-none transition-colors"
                     rows="4"
                     placeholder="Write your note content..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-lg font-semibold text-gray-800 mb-3">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={noteFormData.date}
+                    onChange={(e) => setNoteFormData({ ...noteFormData, date: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:border-blue-500 focus:outline-none transition-colors"
                   />
                 </div>
 

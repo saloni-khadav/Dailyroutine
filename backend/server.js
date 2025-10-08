@@ -18,6 +18,8 @@ app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/diary', require('./routes/diary'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/notes', require('./routes/notes'));
+app.use('/api/alarms', require('./routes/alarms'));
 
 const PORT = 5000;
 

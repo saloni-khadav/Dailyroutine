@@ -31,7 +31,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="fixed left-0 top-16 w-64 bg-white border-r border-gray-200 shadow-sm z-40 flex flex-col" style={{height: 'calc(100vh - 4rem)'}}>
+    <div className="fixed left-0 top-16 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm z-40 flex flex-col" style={{height: 'calc(100vh - 4rem)'}}>
       <div className="p-6 flex-1">
         <nav className="space-y-2">
           {navItems.map((item) => {
@@ -42,13 +42,13 @@ const Sidebar = () => {
                 to={item.to}
                 className={`group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                   isActive 
-                    ? 'bg-blue-50 text-blue-600 border border-blue-100' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
                 <item.icon 
                   size={20} 
-                  className={`${isActive ? 'text-blue-600' : `group-hover:${item.color}`} transition-colors`} 
+                  className={`${isActive ? 'text-blue-600 dark:text-blue-400' : `group-hover:${item.color}`} transition-colors`} 
                 />
                 <span className="font-medium">{item.label}</span>
               </Link>
@@ -57,7 +57,7 @@ const Sidebar = () => {
         </nav>
       </div>
       
-      <div className="p-6 border-t border-gray-200">
+      <div className="p-6 border-t border-gray-200 dark:border-gray-800">
         <button
           onClick={handleLogout}
           className="flex items-center space-x-3 w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"

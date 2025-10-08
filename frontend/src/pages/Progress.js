@@ -10,7 +10,8 @@ const Progress = () => {
   const [stats, setStats] = useState({
     tasks: { total: 0, completed: 0, pending: 0, inProgress: 0 },
     goals: { total: 0, completed: 0 },
-    weeklyProgress: []
+    weeklyProgress: [],
+    averageDailyTasks: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -54,6 +55,15 @@ const Progress = () => {
         });
       }
 
+      // Calculate average daily tasks based on total tasks and days since first task
+      let averageDailyTasks = 0;
+      if (tasks.length > 0) {
+        const firstTaskDate = new Date(Math.min(...tasks.map(task => new Date(task.createdAt))));
+        const today = new Date();
+        const daysSinceFirstTask = Math.max(1, Math.ceil((today - firstTaskDate) / (1000 * 60 * 60 * 24)));
+        averageDailyTasks = Math.round((tasks.length / daysSinceFirstTask) * 10) / 10;
+      }
+
       setStats({
         tasks: {
           total: (taskStats.pending || 0) + (taskStats.completed || 0) + (taskStats['in-progress'] || 0),
@@ -65,7 +75,8 @@ const Progress = () => {
           total: goals.length,
           completed: goals.filter(goal => goal.completed).length
         },
-        weeklyProgress
+        weeklyProgress,
+        averageDailyTasks
       });
     } catch (error) {
       console.error('Error fetching progress data:', error);
@@ -258,10 +269,7 @@ const Progress = () => {
                 Average Daily Tasks
               </h3>
               <p className="text-green-700 dark:text-green-300">
-                {stats.weeklyProgress.length > 0 
-                  ? Math.round(stats.weeklyProgress.reduce((sum, day) => sum + day.tasks, 0) / stats.weeklyProgress.length)
-                  : 0
-                } tasks per day
+                {stats.averageDailyTasks} tasks per day
               </p>
             </div>
           </div>
