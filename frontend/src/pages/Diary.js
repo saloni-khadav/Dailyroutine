@@ -15,7 +15,6 @@ const Diary = () => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     content: '',
-    mood: 'okay',
     emoji: '😐',
     textColor: '#374151',
     textSize: 16,
@@ -69,7 +68,6 @@ const Diary = () => {
       setFormData({
         date: new Date().toISOString().split('T')[0],
         content: '',
-        mood: 'okay',
         emoji: '😐',
         textColor: '#374151',
         textSize: 16,
@@ -99,7 +97,6 @@ const Diary = () => {
     setFormData({
       date: entry.date.split('T')[0],
       content: entry.content,
-      mood: entry.mood,
       emoji: entry.emoji || '😐',
       textColor: entry.textColor || '#374151',
       textSize: entry.textSize || 16,
@@ -301,9 +298,6 @@ const Diary = () => {
                           day: 'numeric'
                         })}
                       </h3>
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getMoodColor(entry.mood)}`}>
-                        {entry.mood}
-                      </span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -365,43 +359,18 @@ const Diary = () => {
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Date and Mood Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      📅 Date
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      🎭 Mood
-                    </label>
-                    <select
-                      value={formData.mood}
-                      onChange={(e) => {
-                        const newMood = e.target.value;
-                        setFormData({ 
-                          ...formData, 
-                          mood: newMood,
-                          emoji: moodEmojis[newMood]?.[0] || getMoodEmoji(newMood)
-                        });
-                      }}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
-                    >
-                      <option value="excellent">😄 Excellent</option>
-                      <option value="good">😊 Good</option>
-                      <option value="okay">😐 Okay</option>
-                      <option value="bad">😞 Bad</option>
-                      <option value="terrible">😢 Terrible</option>
-                    </select>
-                  </div>
+                {/* Date */}
+                <div className="space-y-2">
+                  <label className="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    📅 Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                  />
                 </div>
 
                 {/* Emoji and Image Row */}
@@ -588,7 +557,6 @@ const Diary = () => {
                       setFormData({
                         date: new Date().toISOString().split('T')[0],
                         content: '',
-                        mood: 'okay',
                         emoji: '😐',
                         textColor: '#374151',
                         textSize: 16,

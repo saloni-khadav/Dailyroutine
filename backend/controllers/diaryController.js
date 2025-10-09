@@ -1,4 +1,5 @@
 const Diary = require('../models/Diary');
+const cloudinary = require('../config/cloudinary');
 
 const getDiaryEntries = async (req, res) => {
   try {
@@ -27,10 +28,9 @@ const getDiaryEntries = async (req, res) => {
 
 const createDiaryEntry = async (req, res) => {
   try {
-    const { date, content, mood, emoji, textColor, textSize, image } = req.body;
+    const { date, content, emoji, textColor, textSize, image } = req.body;
     
     console.log('Creating diary entry for user:', req.user._id);
-    console.log('Entry data:', { date, mood, emoji, textColor, textSize, hasImage: !!image });
     
     // Validate required fields
     if (!date || !content) {
@@ -49,14 +49,22 @@ const createDiaryEntry = async (req, res) => {
       return res.status(400).json({ message: 'Entry for this date already exists' });
     }
     
+    let imageUrl = '';
+    if (image) {
+      const uploadResult = await cloudinary.uploader.upload(image, {
+        folder: 'diary-images',
+        resource_type: 'image'
+      });
+      imageUrl = uploadResult.secure_url;
+    }
+    
     const entry = new Diary({
       date: new Date(date),
       content,
-      mood: mood || 'okay',
       emoji: emoji || '😐',
       textColor: textColor || '#374151',
       textSize: textSize || 16,
-      image: image || '',
+      image: imageUrl,
       userId: req.user._id
     });
 
@@ -77,19 +85,28 @@ const createDiaryEntry = async (req, res) => {
 
 const updateDiaryEntry = async (req, res) => {
   try {
-    const { date, content, mood, emoji, textColor, textSize, image } = req.body;
+    const { date, content, emoji, textColor, textSize, image } = req.body;
     
     console.log('Updating diary entry:', req.params.id);
     
     const updateData = {
       date: date ? new Date(date) : undefined,
       content,
-      mood,
       emoji,
       textColor,
-      textSize,
-      image
+      textSize
     };
+    
+    // Handle image upload if new image provided
+    if (image && image.startsWith('data:')) {
+      const uploadResult = await cloudinary.uploader.upload(image, {
+        folder: 'diary-images',
+        resource_type: 'image'
+      });
+      updateData.image = uploadResult.secure_url;
+    } else if (image) {
+      updateData.image = image; // Keep existing URL
+    }
     
     // Remove undefined fields
     Object.keys(updateData).forEach(key => 

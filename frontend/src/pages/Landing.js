@@ -10,6 +10,7 @@ import p1 from '../images/p1.png';
 import t from '../images/t.png';
 
 const Landing = () => {
+  
   const { user } = useAuth();
   
   const features = [

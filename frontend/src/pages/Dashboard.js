@@ -150,10 +150,10 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-16">
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-4">
+      <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
         {/* Welcome Section with Image */}
-        <div className="mb-10">
+        <div className="mb-4">
           <div className="grid lg:grid-cols-3 gap-8 items-center">
             <div className="lg:col-span-2">
               <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
@@ -197,7 +197,7 @@ const Dashboard = () => {
             ))}
           </div>
         ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
           {statCards.map((card, index) => (
             <div
               key={index}
@@ -223,23 +223,23 @@ const Dashboard = () => {
         </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Quick Actions with Images */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-3">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 p-8 shadow-lg">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Quick Actions</h2>
                 <Zap className="w-6 h-6 text-yellow-500" />
               </div>
               
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {quickActions.map((action, index) => (
                   <Link
                     key={index}
                     to={action.link}
                     className="group block p-4 rounded-2xl border-2 border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
                   >
-                    <div className="flex items-center space-x-4">
+                    <div className="flex flex-col items-center text-center space-y-3">
                       <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
                         <img 
                           src={action.image} 
@@ -247,13 +247,12 @@ const Dashboard = () => {
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                      <div>
+                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors text-sm">
                           {action.title}
                         </h3>
-                        <p className="text-sm text-gray-600">{action.description}</p>
+                        <p className="text-xs text-gray-600 mt-1">{action.description}</p>
                       </div>
-                      <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-300" />
                     </div>
                   </Link>
                 ))}
@@ -262,7 +261,7 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Tasks */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 p-8 shadow-lg">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Recent Tasks</h2>
@@ -342,7 +341,7 @@ const Dashboard = () => {
         </div>
 
         {/* Motivational Section with Image */}
-        <div className="mt-10">
+        <div className="mt-4">
           <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-white overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
