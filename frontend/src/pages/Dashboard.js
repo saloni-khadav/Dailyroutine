@@ -9,7 +9,7 @@ import goal from '../images/goal.png';
 import d2 from '../images/d2.png';
 import p1 from '../images/p1.png';
 import t from '../images/t.png';
-import w1 from '../images/w1.jpg'
+import w1 from '../images/w1.jpg';
 
 const Dashboard = () => {
   const { user } = useAuth();

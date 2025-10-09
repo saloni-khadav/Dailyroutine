@@ -22,19 +22,27 @@ const Progress = () => {
   const fetchProgressData = async () => {
     try {
       const [tasksRes, goalsRes, taskStatsRes] = await Promise.all([
-        tasksAPI.getAll(),
-        goalsAPI.getAll(),
+        tasksAPI.getAll({ limit: 1000 }), // Get all tasks for stats
+        goalsAPI.getAll({ limit: 1000 }), // Get all goals for stats
         tasksAPI.getStats()
       ]);
 
-      const tasks = tasksRes.data;
-      const goals = goalsRes.data;
+      const tasks = tasksRes.data.tasks || tasksRes.data;
+      const goals = goalsRes.data.goals || goalsRes.data;
 
       // Process task stats
-      const taskStats = taskStatsRes.data.reduce((acc, stat) => {
-        acc[stat._id] = stat.count;
-        return acc;
-      }, {});
+      const taskStats = Array.isArray(taskStatsRes.data) 
+        ? taskStatsRes.data.reduce((acc, stat) => {
+            acc[stat._id] = stat.count;
+            return acc;
+          }, {})
+        : {};
+      
+      console.log('Task Stats:', taskStats);
+      console.log('Tasks:', tasks.length);
+      console.log('Goals:', goals.length);
+      console.log('Tasks Response:', tasksRes.data);
+      console.log('Goals Response:', goalsRes.data);
 
       // Calculate weekly progress (last 7 days)
       const weeklyProgress = [];

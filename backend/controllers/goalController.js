@@ -2,8 +2,23 @@ const Goal = require('../models/Goal');
 
 const getGoals = async (req, res) => {
   try {
-    const goals = await Goal.find({ userId: req.user._id }).sort({ deadline: 1 });
-    res.json(goals);
+    const { page = 1, limit = 6 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const goals = await Goal.find({ userId: req.user._id })
+      .sort({ deadline: 1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const totalGoals = await Goal.countDocuments({ userId: req.user._id });
+    const totalPages = Math.ceil(totalGoals / parseInt(limit));
+
+    res.json({
+      goals,
+      totalPages,
+      currentPage: parseInt(page),
+      totalGoals
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

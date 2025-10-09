@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import { tasksAPI, goalsAPI, notesAPI } from '../utils/api';
-import { Calendar as CalendarIcon, CheckSquare, Target, Plus, Edit, Trash2, StickyNote } from 'lucide-react';
+import { Calendar as CalendarIcon, CheckSquare, Target, Plus, Edit, Trash2, StickyNote, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import 'react-calendar/dist/Calendar.css';
 import '../calendar-styles.css';
@@ -33,15 +33,16 @@ const CalendarPage = () => {
   const fetchData = async () => {
     try {
       const [tasksRes, goalsRes, notesRes] = await Promise.all([
-        tasksAPI.getAll(),
-        goalsAPI.getAll(),
+        tasksAPI.getAll({ limit: 1000 }),
+        goalsAPI.getAll({ limit: 1000 }),
         notesAPI.getAll()
       ]);
-      setTasks(tasksRes.data);
-      setGoals(goalsRes.data);
+      setTasks(tasksRes.data.tasks || tasksRes.data);
+      setGoals(goalsRes.data.goals || goalsRes.data);
       setNotes(notesRes.data);
     } catch (error) {
       toast.error('Failed to fetch data');
+      console.error('Calendar fetch error:', error);
     } finally {
       setLoading(false);
     }
@@ -157,7 +158,7 @@ const CalendarPage = () => {
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           {/* Calendar */}
           <div className="xl:col-span-3">
-            <div className="bg-white rounded-3xl border-2 border-gray-100 shadow-lg p-8">
+            <div className="bg-white rounded-3xl border-2 border-blue-200 shadow-lg p-8">
               <div className="w-full">
                 <Calendar
                   onChange={setDate}
@@ -296,31 +297,62 @@ const CalendarPage = () => {
               )}
             </div>
 
-            {/* Quick Stats */}
-            <div className="bg-white rounded-3xl border-2 border-gray-100 shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-6">
-                📊 This Month Stats
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-xl">
-                  <span className="text-gray-700 font-medium">📋 Total Tasks</span>
-                  <span className="font-bold text-blue-600 text-lg">
-                    {tasks.length}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl">
-                  <span className="text-gray-700 font-medium">🎯 Total Goals</span>
-                  <span className="font-bold text-green-600 text-lg">
-                    {goals.length}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-purple-50 rounded-xl">
-                  <span className="text-gray-700 font-medium">✅ Completed</span>
-                  <span className="font-bold text-purple-600 text-lg">
-                    {tasks.filter(task => task.status === 'completed').length}
-                  </span>
-                </div>
+          </div>
+        </div>
+
+        {/* Quick Stats - Dashboard Style */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          <div className="group relative p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 border-blue-100 group-hover:scale-110 transition-transform duration-300">
+                <CheckSquare className="w-6 h-6" />
               </div>
+              <div className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                +12%
+              </div>
+            </div>
+            
+            <div className="relative z-10">
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Tasks</p>
+              <p className="text-3xl font-bold text-gray-800">{tasks.length}</p>
+            </div>
+          </div>
+
+          <div className="group relative p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-3 rounded-2xl bg-green-50 text-green-600 border-green-100 group-hover:scale-110 transition-transform duration-300">
+                <Target className="w-6 h-6" />
+              </div>
+              <div className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                +8%
+              </div>
+            </div>
+            
+            <div className="relative z-10">
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Goals</p>
+              <p className="text-3xl font-bold text-gray-800">{goals.length}</p>
+            </div>
+          </div>
+
+          <div className="group relative p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-3 rounded-2xl bg-purple-50 text-purple-600 border-purple-100 group-hover:scale-110 transition-transform duration-300">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                +15%
+              </div>
+            </div>
+            
+            <div className="relative z-10">
+              <p className="text-sm font-medium text-gray-600 mb-1">Completed Tasks</p>
+              <p className="text-3xl font-bold text-gray-800">{tasks.filter(task => task.status === 'completed').length}</p>
             </div>
           </div>
         </div>
@@ -369,6 +401,7 @@ const CalendarPage = () => {
                     value={noteFormData.date}
                     onChange={(e) => setNoteFormData({ ...noteFormData, date: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:border-blue-500 focus:outline-none transition-colors"
+                    min={new Date().toISOString().split('T')[0]}
                   />
                 </div>
 

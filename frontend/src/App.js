@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
@@ -27,6 +27,10 @@ function AppContent() {
   const location = useLocation();
   const isLandingPage = location.pathname === '/';
   const showSidebar = user && !isLandingPage;
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
