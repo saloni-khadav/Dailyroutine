@@ -2,14 +2,38 @@ const Task = require('../models/Task');
 
 const getTasks = async (req, res) => {
   try {
-    const { status, priority, sortBy = 'dueDate' } = req.query;
+    const { status, priority, age, sortBy = 'dueDate', page = 1, limit = 5 } = req.query;
     const filter = { userId: req.user._id };
     
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
+    
+    if (age) {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      if (age === 'new') {
+        filter.createdAt = { $gte: sevenDaysAgo };
+      } else if (age === 'old') {
+        filter.createdAt = { $lt: sevenDaysAgo };
+      }
+    }
 
-    const tasks = await Task.find(filter).sort({ [sortBy]: 1 });
-    res.json(tasks);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const tasks = await Task.find(filter)
+      .sort({ [sortBy]: 1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const totalTasks = await Task.countDocuments(filter);
+    const totalPages = Math.ceil(totalTasks / parseInt(limit));
+
+    res.json({
+      tasks,
+      totalPages,
+      currentPage: parseInt(page),
+      totalTasks
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
