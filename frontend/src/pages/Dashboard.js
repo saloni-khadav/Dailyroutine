@@ -25,13 +25,27 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [tasksRes, goalsRes] = await Promise.all([
-        tasksAPI.getAll(),
-        goalsAPI.getAll()
-      ]);
+      console.log('Fetching dashboard data...');
       
-      const tasks = tasksRes.data;
-      const goals = goalsRes.data;
+      // Try to fetch tasks and goals, handle errors gracefully
+      let tasks = [];
+      let goals = [];
+      
+      try {
+        const tasksRes = await tasksAPI.getAll();
+        tasks = tasksRes.data || [];
+        console.log('Tasks fetched:', tasks.length);
+      } catch (taskError) {
+        console.error('Failed to fetch tasks:', taskError);
+      }
+      
+      try {
+        const goalsRes = await goalsAPI.getAll();
+        goals = goalsRes.data || [];
+        console.log('Goals fetched:', goals.length);
+      } catch (goalError) {
+        console.error('Failed to fetch goals:', goalError);
+      }
       
       const completedTasks = tasks.filter(task => task.status === 'completed').length;
       const completedGoals = goals.filter(goal => goal.completed).length;

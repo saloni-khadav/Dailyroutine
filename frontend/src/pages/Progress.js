@@ -21,28 +21,26 @@ const Progress = () => {
 
   const fetchProgressData = async () => {
     try {
-      const [tasksRes, goalsRes, taskStatsRes] = await Promise.all([
-        tasksAPI.getAll({ limit: 1000 }), // Get all tasks for stats
-        goalsAPI.getAll({ limit: 1000 }), // Get all goals for stats
-        tasksAPI.getStats()
-      ]);
-
-      const tasks = tasksRes.data.tasks || tasksRes.data;
-      const goals = goalsRes.data.goals || goalsRes.data;
-
-      // Process task stats
-      const taskStats = Array.isArray(taskStatsRes.data) 
-        ? taskStatsRes.data.reduce((acc, stat) => {
-            acc[stat._id] = stat.count;
-            return acc;
-          }, {})
-        : {};
+      console.log('Fetching progress data...');
       
-      console.log('Task Stats:', taskStats);
-      console.log('Tasks:', tasks.length);
-      console.log('Goals:', goals.length);
-      console.log('Tasks Response:', tasksRes.data);
-      console.log('Goals Response:', goalsRes.data);
+      let tasks = [];
+      let goals = [];
+      
+      try {
+        const tasksRes = await tasksAPI.getAll();
+        tasks = tasksRes.data || [];
+        console.log('Tasks fetched:', tasks.length);
+      } catch (taskError) {
+        console.error('Failed to fetch tasks:', taskError);
+      }
+      
+      try {
+        const goalsRes = await goalsAPI.getAll();
+        goals = goalsRes.data || [];
+        console.log('Goals fetched:', goals.length);
+      } catch (goalError) {
+        console.error('Failed to fetch goals:', goalError);
+      }
 
       // Calculate weekly progress (last 7 days)
       const weeklyProgress = [];
@@ -72,12 +70,17 @@ const Progress = () => {
         averageDailyTasks = Math.round((tasks.length / daysSinceFirstTask) * 10) / 10;
       }
 
+      // Calculate task statistics
+      const completedTasks = tasks.filter(task => task.status === 'completed').length;
+      const pendingTasks = tasks.filter(task => task.status === 'pending').length;
+      const inProgressTasks = tasks.filter(task => task.status === 'in-progress').length;
+      
       setStats({
         tasks: {
-          total: (taskStats.pending || 0) + (taskStats.completed || 0) + (taskStats['in-progress'] || 0),
-          completed: taskStats.completed || 0,
-          pending: taskStats.pending || 0,
-          inProgress: taskStats['in-progress'] || 0
+          total: tasks.length,
+          completed: completedTasks,
+          pending: pendingTasks,
+          inProgress: inProgressTasks
         },
         goals: {
           total: goals.length,
