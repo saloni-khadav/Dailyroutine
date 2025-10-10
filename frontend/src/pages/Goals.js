@@ -39,9 +39,21 @@ const Goals = () => {
 
   const applyFilters = () => {
     let filtered = [...goals];
+    
+    console.log('=== FILTER DEBUG ===');
+    console.log('All goals:', goals.map(g => ({ title: g.title, type: g.type })));
+    console.log('Selected filter type:', filters.type);
+    console.log('Total goals:', goals.length);
 
     if (filters.type) {
-      filtered = filtered.filter(goal => goal.type === filters.type);
+      const beforeFilter = filtered.length;
+      filtered = filtered.filter(goal => {
+        const goalType = goal.type || 'short-term';
+        const matches = goalType === filters.type;
+        console.log(`Goal "${goal.title}" has type "${goalType}", filter is "${filters.type}", matches: ${matches}`);
+        return matches;
+      });
+      console.log(`After type filter: ${beforeFilter} -> ${filtered.length} goals`);
     }
 
     if (filters.status === 'completed') {
@@ -61,20 +73,28 @@ const Goals = () => {
       return 0;
     });
 
+    console.log('Final filtered goals:', filtered.map(g => ({ title: g.title, type: g.type })));
+    console.log('===================');
     setFilteredGoals(filtered);
   };
 
   const fetchGoals = async () => {
     try {
       const response = await goalsAPI.getAll({ page: currentPage, limit: goalsPerPage });
+      let fetchedGoals = [];
+      
       if (response.data.goals) {
-        setGoals(response.data.goals);
+        fetchedGoals = response.data.goals;
         setTotalPages(response.data.totalPages || 1);
       } else {
-        setGoals(response.data);
+        fetchedGoals = response.data;
         setTotalPages(Math.ceil(response.data.length / goalsPerPage));
       }
+      
+      setGoals(fetchedGoals);
+      console.log('Fetched goals with types:', fetchedGoals.map(g => ({ title: g.title, type: g.type })));
     } catch (error) {
+      console.error('Failed to fetch goals:', error);
       toast.error('Failed to fetch goals');
     } finally {
       setLoading(false);

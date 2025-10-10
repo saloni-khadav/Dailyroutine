@@ -24,6 +24,11 @@ const goalSchema = new mongoose.Schema({
     min: 0,
     max: 100
   },
+  type: {
+    type: String,
+    enum: ['short-term', 'long-term'],
+    default: 'short-term'
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
