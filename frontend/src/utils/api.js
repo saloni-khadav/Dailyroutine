@@ -42,7 +42,8 @@ export const diaryAPI = {
 // Users API
 export const usersAPI = {
   updateProfile: (data) => axios.put('/users/profile', data),
-  updatePreferences: (data) => axios.put('/users/preferences', data)
+  updatePreferences: (data) => axios.put('/users/preferences', data),
+  deleteAccount: () => axios.delete('/users/account')
 };
 
 // Notes API

@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const Task = require('../models/Task');
+const Goal = require('../models/Goal');
+const Diary = require('../models/Diary');
 
 const updateProfile = async (req, res) => {
   try {
@@ -51,4 +54,22 @@ const updatePreferences = async (req, res) => {
   }
 };
 
-module.exports = { updateProfile, updatePreferences };
+const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Delete all user data
+    await Promise.all([
+      Task.deleteMany({ userId }),
+      Goal.deleteMany({ userId }),
+      Diary.deleteMany({ userId }),
+      User.findByIdAndDelete(userId)
+    ]);
+    
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { updateProfile, updatePreferences, deleteAccount };
