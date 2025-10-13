@@ -27,16 +27,16 @@ const Progress = () => {
       let goals = [];
       
       try {
-        const tasksRes = await tasksAPI.getAll();
-        tasks = tasksRes.data || [];
+        const tasksRes = await tasksAPI.getAll({ page: 1, limit: 1000 });
+        tasks = tasksRes.data?.tasks || [];
         console.log('Tasks fetched:', tasks.length);
       } catch (taskError) {
         console.error('Failed to fetch tasks:', taskError);
       }
       
       try {
-        const goalsRes = await goalsAPI.getAll();
-        goals = goalsRes.data || [];
+        const goalsRes = await goalsAPI.getAll({ page: 1, limit: 1000 });
+        goals = goalsRes.data?.goals || [];
         console.log('Goals fetched:', goals.length);
       } catch (goalError) {
         console.error('Failed to fetch goals:', goalError);

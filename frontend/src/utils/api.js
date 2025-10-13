@@ -25,7 +25,7 @@ export const tasksAPI = {
 
 // Goals API
 export const goalsAPI = {
-  getAll: () => axios.get('/goals'),
+  getAll: (params) => axios.get('/goals', { params }),
   create: (data) => axios.post('/goals', data),
   update: (id, data) => axios.put(`/goals/${id}`, data),
   delete: (id) => axios.delete(`/goals/${id}`)

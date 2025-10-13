@@ -308,21 +308,21 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 px-4 bg-white border-t border-gray-100">
+      <footer className="py-16 px-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
                 Routine Master
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Your beautiful daily planner for a more organized and productive life.
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold text-gray-800 mb-4">Product</h4>
-              <ul className="space-y-2 text-gray-600">
+              <h4 className="font-semibold text-gray-800 dark:text-white mb-4">Product</h4>
+              <ul className="space-y-2 text-gray-600 dark:text-gray-400">
                 <li><a href="#" className="hover:text-blue-600 transition-colors">Features</a></li>
                 <li><a href="#" className="hover:text-blue-600 transition-colors">Pricing</a></li>
                 <li><a href="#" className="hover:text-blue-600 transition-colors">Updates</a></li>
@@ -330,8 +330,8 @@ const Landing = () => {
             </div>
             
             <div>
-              <h4 className="font-semibold text-gray-800 mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-600">
+              <h4 className="font-semibold text-gray-800 dark:text-white mb-4">Support</h4>
+              <ul className="space-y-2 text-gray-600 dark:text-gray-400">
                 <li><a href="#" className="hover:text-blue-600 transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-blue-600 transition-colors">Contact</a></li>
                 <li><a href="#" className="hover:text-blue-600 transition-colors">Community</a></li>
@@ -339,8 +339,8 @@ const Landing = () => {
             </div>
             
             <div>
-              <h4 className="font-semibold text-gray-800 mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-600">
+              <h4 className="font-semibold text-gray-800 dark:text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-gray-600 dark:text-gray-400">
                 <li><a href="#" className="hover:text-blue-600 transition-colors">About</a></li>
                 <li><a href="#" className="hover:text-blue-600 transition-colors">Privacy</a></li>
                 <li><a href="#" className="hover:text-blue-600 transition-colors">Terms</a></li>
@@ -348,7 +348,7 @@ const Landing = () => {
             </div>
           </div>
           
-          <div className="border-t border-gray-200 pt-8 text-center text-gray-500">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-8 text-center text-gray-500 dark:text-gray-400">
             <p>&copy; 2024 Routine Master. Made with ❤️ for productivity enthusiasts.</p>
           </div>
         </div>

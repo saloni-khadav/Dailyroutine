@@ -32,16 +32,16 @@ const Dashboard = () => {
       let goals = [];
       
       try {
-        const tasksRes = await tasksAPI.getAll();
-        tasks = tasksRes.data || [];
+        const tasksRes = await tasksAPI.getAll({ page: 1, limit: 1000 });
+        tasks = tasksRes.data?.tasks || [];
         console.log('Tasks fetched:', tasks.length);
       } catch (taskError) {
         console.error('Failed to fetch tasks:', taskError);
       }
       
       try {
-        const goalsRes = await goalsAPI.getAll();
-        goals = goalsRes.data || [];
+        const goalsRes = await goalsAPI.getAll({ page: 1, limit: 1000 });
+        goals = goalsRes.data?.goals || [];
         console.log('Goals fetched:', goals.length);
       } catch (goalError) {
         console.error('Failed to fetch goals:', goalError);
@@ -215,7 +215,7 @@ const Dashboard = () => {
           {statCards.map((card, index) => (
             <div
               key={index}
-              className="group relative p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
+              className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
             >
               <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${card.bgGradient} rounded-full opacity-20 -translate-y-10 translate-x-10`}></div>
               
@@ -229,8 +229,8 @@ const Dashboard = () => {
               </div>
               
               <div className="relative z-10">
-                <p className="text-sm font-medium text-gray-600 mb-1">{card.title}</p>
-                <p className="text-3xl font-bold text-gray-800">{card.value}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{card.title}</p>
+                <p className="text-3xl font-bold text-gray-800 dark:text-white">{card.value}</p>
               </div>
             </div>
           ))}
@@ -240,7 +240,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Quick Actions with Images */}
           <div className="lg:col-span-3">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 p-8 shadow-lg">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 p-8 shadow-lg">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Quick Actions</h2>
                 <Zap className="w-6 h-6 text-yellow-500" />
@@ -251,7 +251,7 @@ const Dashboard = () => {
                   <Link
                     key={index}
                     to={action.link}
-                    className="group block p-4 rounded-2xl border-2 border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                    className="group block p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
                   >
                     <div className="flex flex-col items-center text-center space-y-3">
                       <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
@@ -262,10 +262,10 @@ const Dashboard = () => {
                         />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors text-sm">
+                        <h3 className="font-semibold text-gray-800 dark:text-white group-hover:text-blue-600 transition-colors text-sm">
                           {action.title}
                         </h3>
-                        <p className="text-xs text-gray-600 mt-1">{action.description}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{action.description}</p>
                       </div>
                     </div>
                   </Link>
@@ -276,7 +276,7 @@ const Dashboard = () => {
 
           {/* Recent Tasks */}
           <div className="lg:col-span-3">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 p-8 shadow-lg">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 p-8 shadow-lg">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Recent Tasks</h2>
                 <Link
@@ -292,7 +292,7 @@ const Dashboard = () => {
                 {recentTasks.map((task, index) => (
                   <div
                     key={task._id}
-                    className="group flex items-center justify-between p-4 bg-gray-50/80 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300"
+                    className="group flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/80 rounded-2xl border border-gray-100 dark:border-gray-600 hover:border-gray-200 dark:hover:border-gray-500 hover:shadow-md transition-all duration-300"
                   >
                     <div className="flex items-center space-x-4">
                       <div className={`w-4 h-4 rounded-full ${
@@ -301,10 +301,10 @@ const Dashboard = () => {
                       } group-hover:scale-125 transition-transform duration-300`}></div>
                       
                       <div>
-                        <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                        <h3 className="font-semibold text-gray-800 dark:text-white group-hover:text-blue-600 transition-colors">
                           {task.title}
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                           Due: {new Date(task.dueDate).toLocaleDateString()}
                         </p>
                       </div>
@@ -339,8 +339,8 @@ const Dashboard = () => {
                       <CheckSquare className="w-12 h-12 text-blue-600" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">No tasks yet!</h3>
-                  <p className="text-gray-600 mb-6">Create your first task to get started on your productivity journey.</p>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">No tasks yet!</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">Create your first task to get started on your productivity journey.</p>
                   <Link
                     to="/tasks"
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"

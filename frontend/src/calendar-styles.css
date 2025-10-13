@@ -4,6 +4,11 @@
   border: none !important;
   font-family: inherit !important;
   max-width: none !important;
+  background: white !important;
+}
+
+.dark .calendar-large .react-calendar {
+  background: #1f2937 !important;
 }
 
 .calendar-large .react-calendar__viewContainer {
@@ -37,9 +42,35 @@
   transition: all 0.2s ease !important;
 }
 
+.dark .calendar-large .react-calendar__tile {
+  background: #1f2937 !important;
+  color: #f9fafb !important;
+  border: 1px solid #374151 !important;
+}
+
+.dark .calendar-large .react-calendar__viewContainer {
+  background: #1f2937 !important;
+}
+
+.dark .calendar-large .react-calendar__month-view {
+  background: #1f2937 !important;
+}
+
+.dark .calendar-large .react-calendar__month-view__days {
+  background: #1f2937 !important;
+}
+
+.dark .calendar-large .react-calendar__navigation {
+  background: #1f2937 !important;
+}
+
 .calendar-large .react-calendar__tile:hover {
   background: #f3f4f6 !important;
   transform: scale(1.05) !important;
+}
+
+.dark .calendar-large .react-calendar__tile:hover {
+  background: #374151 !important;
 }
 
 .calendar-large .react-calendar__tile--active {
@@ -52,6 +83,12 @@
 .calendar-large .react-calendar__tile--now {
   background: #fef3c7 !important;
   color: #92400e !important;
+  border: 2px solid #f59e0b !important;
+}
+
+.dark .calendar-large .react-calendar__tile--now {
+  background: #451a03 !important;
+  color: #fbbf24 !important;
   border: 2px solid #f59e0b !important;
 }
 
@@ -70,9 +107,18 @@
   transition: all 0.2s ease !important;
 }
 
+.dark .calendar-large .react-calendar__navigation button {
+  background: #374151 !important;
+  color: #f9fafb !important;
+}
+
 .calendar-large .react-calendar__navigation button:hover {
   background: #e2e8f0 !important;
   transform: translateY(-2px) !important;
+}
+
+.dark .calendar-large .react-calendar__navigation button:hover {
+  background: #4b5563 !important;
 }
 
 .calendar-large .react-calendar__navigation__label {
@@ -99,6 +145,10 @@
   color: #6b7280 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
+}
+
+.dark .calendar-large .react-calendar__month-view__weekdays {
+  color: #9ca3af !important;
 }
 
 .calendar-large .react-calendar__month-view__weekdays__weekday {

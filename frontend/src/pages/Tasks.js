@@ -237,7 +237,7 @@ const Tasks = () => {
                 <div className="space-y-4">
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
                     <span className="mr-2">📅</span>
-                    Due: {new Date(task.dueDate).toLocaleDateString()}
+                    Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'No date set'}
                   </div>
                   
                   {(task.startTime || task.endTime) && (

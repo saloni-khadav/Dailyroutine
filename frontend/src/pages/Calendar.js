@@ -158,7 +158,7 @@ const CalendarPage = () => {
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           {/* Calendar */}
           <div className="xl:col-span-3">
-            <div className="bg-white rounded-3xl border-2 border-blue-200 shadow-lg p-8">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-blue-200 dark:border-gray-700 shadow-lg p-8">
               <div className="w-full">
                 <Calendar
                   onChange={setDate}
@@ -173,9 +173,9 @@ const CalendarPage = () => {
           {/* Events and Notes for Selected Date */}
           <div className="xl:col-span-1 space-y-6">
             {/* Notes Section */}
-            <div className="bg-white rounded-3xl border-2 border-gray-100 shadow-lg p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-gray-100 dark:border-gray-700 shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
                   <StickyNote className="w-5 h-5 mr-2 text-yellow-500" />
                   Notes for {date.toLocaleDateString()}
                 </h2>
@@ -198,11 +198,11 @@ const CalendarPage = () => {
               {selectedDateNotes.length > 0 ? (
                 <div className="space-y-3">
                   {selectedDateNotes.map((note) => (
-                    <div key={note._id} className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <div key={note._id} className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-800 mb-2">{note.title}</h3>
-                          <p className="text-gray-600 text-sm">{note.content}</p>
+                          <h3 className="font-semibold text-gray-800 dark:text-white mb-2">{note.title}</h3>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm">{note.content}</p>
                         </div>
                         <div className="flex space-x-1 ml-2">
                           <button
@@ -225,14 +225,14 @@ const CalendarPage = () => {
               ) : (
                 <div className="text-center py-6">
                   <StickyNote className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No notes for this date</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">No notes for this date</p>
                 </div>
               )}
             </div>
 
             {/* Events Section */}
-            <div className="bg-white rounded-3xl border-2 border-gray-100 shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-gray-100 dark:border-gray-700 shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
                 <CalendarIcon className="w-5 h-5 mr-2 text-blue-500" />
                 Events for {date.toLocaleDateString()}
               </h2>
@@ -302,7 +302,7 @@ const CalendarPage = () => {
 
         {/* Quick Stats - Dashboard Style */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="group relative p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+          <div className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
             
             <div className="flex items-center justify-between mb-4 relative z-10">
@@ -315,12 +315,12 @@ const CalendarPage = () => {
             </div>
             
             <div className="relative z-10">
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Tasks</p>
-              <p className="text-3xl font-bold text-gray-800">{tasks.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Tasks</p>
+              <p className="text-3xl font-bold text-gray-800 dark:text-white">{tasks.length}</p>
             </div>
           </div>
 
-          <div className="group relative p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+          <div className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
             
             <div className="flex items-center justify-between mb-4 relative z-10">
@@ -333,12 +333,12 @@ const CalendarPage = () => {
             </div>
             
             <div className="relative z-10">
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Goals</p>
-              <p className="text-3xl font-bold text-gray-800">{goals.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Goals</p>
+              <p className="text-3xl font-bold text-gray-800 dark:text-white">{goals.length}</p>
             </div>
           </div>
 
-          <div className="group relative p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+          <div className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
             
             <div className="flex items-center justify-between mb-4 relative z-10">
@@ -351,8 +351,8 @@ const CalendarPage = () => {
             </div>
             
             <div className="relative z-10">
-              <p className="text-sm font-medium text-gray-600 mb-1">Completed Tasks</p>
-              <p className="text-3xl font-bold text-gray-800">{tasks.filter(task => task.status === 'completed').length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Completed Tasks</p>
+              <p className="text-3xl font-bold text-gray-800 dark:text-white">{tasks.filter(task => task.status === 'completed').length}</p>
             </div>
           </div>
         </div>
@@ -360,13 +360,13 @@ const CalendarPage = () => {
         {/* Note Modal */}
         {showNoteModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl border-2 border-gray-100">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-8 shadow-2xl border-2 border-gray-100 dark:border-gray-700">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
                 {editingNote ? '📝 Edit Note' : '✨ Add New Note'}
               </h2>
               <form onSubmit={handleNoteSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-lg font-semibold text-gray-800 mb-3">
+                  <label className="block text-lg font-semibold text-gray-800 dark:text-white mb-3">
                     Note Title
                   </label>
                   <input
@@ -374,25 +374,25 @@ const CalendarPage = () => {
                     required
                     value={noteFormData.title}
                     onChange={(e) => setNoteFormData({ ...noteFormData, title: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none transition-colors"
                     placeholder="Enter note title..."
                   />
                 </div>
                 <div>
-                  <label className="block text-lg font-semibold text-gray-800 mb-3">
+                  <label className="block text-lg font-semibold text-gray-800 dark:text-white mb-3">
                     Content
                   </label>
                   <textarea
                     required
                     value={noteFormData.content}
                     onChange={(e) => setNoteFormData({ ...noteFormData, content: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none transition-colors"
                     rows="4"
                     placeholder="Write your note content..."
                   />
                 </div>
                 <div>
-                  <label className="block text-lg font-semibold text-gray-800 mb-3">
+                  <label className="block text-lg font-semibold text-gray-800 dark:text-white mb-3">
                     Date
                   </label>
                   <input
@@ -400,7 +400,7 @@ const CalendarPage = () => {
                     required
                     value={noteFormData.date}
                     onChange={(e) => setNoteFormData({ ...noteFormData, date: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none transition-colors"
                     min={new Date().toISOString().split('T')[0]}
                   />
                 </div>

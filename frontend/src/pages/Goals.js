@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 const Goals = () => {
   const [goals, setGoals] = useState([]);
-  const [filteredGoals, setFilteredGoals] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
@@ -27,74 +27,26 @@ const Goals = () => {
 
   useEffect(() => {
     fetchGoals();
-  }, [currentPage]);
+  }, [currentPage, filters]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [filters]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [goals, filters]);
 
-  const applyFilters = () => {
-    let filtered = [...goals];
-    
-    console.log('=== FILTER DEBUG ===');
-    console.log('All goals:', goals.map(g => ({ title: g.title, type: g.type })));
-    console.log('Selected filter type:', filters.type);
-    console.log('Total goals:', goals.length);
-
-    if (filters.type) {
-      const beforeFilter = filtered.length;
-      filtered = filtered.filter(goal => {
-        const goalType = goal.type || 'short-term';
-        const matches = goalType === filters.type;
-        console.log(`Goal "${goal.title}" has type "${goalType}", filter is "${filters.type}", matches: ${matches}`);
-        return matches;
-      });
-      console.log(`After type filter: ${beforeFilter} -> ${filtered.length} goals`);
-    }
-
-    if (filters.status === 'completed') {
-      filtered = filtered.filter(goal => goal.completed);
-    } else if (filters.status === 'in-progress') {
-      filtered = filtered.filter(goal => !goal.completed && goal.progress > 0);
-    } else if (filters.status === 'not-started') {
-      filtered = filtered.filter(goal => !goal.completed && goal.progress === 0);
-    }
-
-    filtered.sort((a, b) => {
-      if (filters.sortBy === 'deadline') {
-        return new Date(a.deadline) - new Date(b.deadline);
-      } else if (filters.sortBy === 'progress') {
-        return b.progress - a.progress;
-      }
-      return 0;
-    });
-
-    console.log('Final filtered goals:', filtered.map(g => ({ title: g.title, type: g.type })));
-    console.log('===================');
-    setFilteredGoals(filtered);
-  };
 
   const fetchGoals = async () => {
     try {
-      const response = await goalsAPI.getAll({ page: currentPage, limit: goalsPerPage });
-      let fetchedGoals = [];
+      const response = await goalsAPI.getAll({ ...filters, page: currentPage, limit: goalsPerPage });
       
       if (response.data.goals) {
-        fetchedGoals = response.data.goals;
+        setGoals(response.data.goals);
         setTotalPages(response.data.totalPages || 1);
       } else {
-        fetchedGoals = response.data;
+        setGoals(response.data);
         setTotalPages(Math.ceil(response.data.length / goalsPerPage));
       }
-      
-      setGoals(fetchedGoals);
-      console.log('Fetched goals with types:', fetchedGoals.map(g => ({ title: g.title, type: g.type })));
     } catch (error) {
-      console.error('Failed to fetch goals:', error);
       toast.error('Failed to fetch goals');
     } finally {
       setLoading(false);
@@ -218,8 +170,8 @@ const Goals = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[280px]" style={{marginTop: '2rem'}}>
-          {filteredGoals.length > 0 ? (
-            filteredGoals.map((goal) => (
+          {goals.length > 0 ? (
+            goals.map((goal) => (
               <div key={goal._id} className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 p-4 mt-2 border border-gray-100 dark:border-gray-700 hover:border-primary-200 dark:hover:border-primary-600">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center">
