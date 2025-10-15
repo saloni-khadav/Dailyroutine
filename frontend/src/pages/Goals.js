@@ -240,7 +240,7 @@ const Goals = () => {
                       ✅ COMPLETED!
                     </div>
                   ) : (
-                    <div className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                    <div className="bg-gradient-to-r from-purple-400 via-blue-500 to-indigo-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
                       🎯 IN PROGRESS
                     </div>
                   )}

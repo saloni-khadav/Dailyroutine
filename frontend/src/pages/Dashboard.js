@@ -9,7 +9,7 @@ import goal from '../images/goal.png';
 import d2 from '../images/d2.png';
 import p1 from '../images/p1.png';
 import t from '../images/t.png';
-import w1 from '../images/w1.jpg';
+import img from '../images/img.png';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -186,9 +186,9 @@ const Dashboard = () => {
             <div className="lg:col-span-1">
               <div className="relative">
                 <img 
-                  src={w1}
+                  src={img}
                   alt="Productivity"
-                  className="w-full h-48 object-cover rounded-3xl shadow-lg"
+                  className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-3xl shadow-lg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent rounded-3xl"></div>
                 <div className="absolute bottom-4 left-4 text-white">
@@ -254,7 +254,7 @@ const Dashboard = () => {
                     className="group block p-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
                   >
                     <div className="flex flex-col items-center text-center space-y-3">
-                      <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0">
                         <img 
                           src={action.image} 
                           alt={action.title}
@@ -333,7 +333,7 @@ const Dashboard = () => {
                     <img 
                       src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=200&h=150&fit=crop&crop=center" 
                       alt="No tasks"
-                      className="w-32 h-24 object-cover rounded-2xl mx-auto opacity-50"
+                      className="w-24 h-18 sm:w-28 sm:h-20 md:w-32 md:h-24 object-cover rounded-2xl mx-auto opacity-50"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <CheckSquare className="w-12 h-12 text-blue-600" />
@@ -374,7 +374,7 @@ const Dashboard = () => {
                 <img 
                   src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=200&fit=crop&crop=center" 
                   alt="Motivation"
-                  className="w-full h-32 object-cover rounded-2xl opacity-80"
+                  className="w-full h-24 sm:h-28 md:h-32 object-cover rounded-2xl opacity-80"
                 />
               </div>
             </div>
