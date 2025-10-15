@@ -315,16 +315,24 @@ const Diary = () => {
                     </button>
                   </div>
                 </div>
-                {entry.image && (
-                  <div className="mb-4">
-                    <img src={entry.image} alt="Diary entry" className="max-w-full h-auto rounded-lg" />
+                {entry.image ? (
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0">
+                      <img src={entry.image} alt="Diary entry" className="w-48 h-auto rounded-lg" />
+                    </div>
+                    <div className="flex-1 prose dark:prose-invert max-w-none">
+                      <p className="whitespace-pre-wrap" style={{ color: entry.textColor || '#374151', fontSize: `${entry.textSize || 16}px` }}>
+                        {entry.content}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="prose dark:prose-invert max-w-none">
+                    <p className="whitespace-pre-wrap" style={{ color: entry.textColor || '#374151', fontSize: `${entry.textSize || 16}px` }}>
+                      {entry.content}
+                    </p>
                   </div>
                 )}
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap" style={{ color: entry.textColor || '#374151', fontSize: `${entry.textSize || 16}px` }}>
-                    {entry.content}
-                  </p>
-                </div>
               </div>
             ))
           ) : (
@@ -557,7 +565,7 @@ const Diary = () => {
                       setFormData({
                         date: new Date().toISOString().split('T')[0],
                         content: '',
-                        emoji: '😐',
+                        emoji: '😊',
                         textColor: '#374151',
                         textSize: 16,
                         image: ''

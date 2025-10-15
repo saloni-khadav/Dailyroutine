@@ -5,6 +5,7 @@ import { Calendar as CalendarIcon, CheckSquare, Target, Plus, Edit, Trash2, Stic
 import toast from 'react-hot-toast';
 import 'react-calendar/dist/Calendar.css';
 import '../calendar-styles.css';
+import image from '../images/calender1.png';
 
 const CalendarPage = () => {
   const [date, setDate] = useState(new Date());
@@ -155,25 +156,37 @@ const CalendarPage = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Calendar</h1>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
           {/* Calendar */}
-          <div className="xl:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-blue-200 dark:border-gray-700 shadow-lg p-8">
-              <div className="w-full">
-                <Calendar
-                  onChange={setDate}
-                  value={date}
-                  tileContent={tileContent}
-                  className="!w-full !max-w-none border-none calendar-large"
+          <div className="lg:col-span-3">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg p-6">
+              <Calendar
+                onChange={setDate}
+                value={date}
+                tileContent={tileContent}
+                className="!w-full !max-w-none border-none calendar-large"
+              />
+            </div>
+          </div>
+
+          {/* Sidebar with Image */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg p-6">
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl overflow-hidden h-96">
+                <img 
+                  src={image} 
+                  alt="Calendar Planning" 
+                  className="w-full h-full object-cover"
                 />
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Events and Notes for Selected Date */}
-          <div className="xl:col-span-1 space-y-6">
-            {/* Notes Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-gray-100 dark:border-gray-700 shadow-lg p-6">
+        {/* Notes and Events Below Calendar */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Notes Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg p-4">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
                   <StickyNote className="w-5 h-5 mr-2 text-yellow-500" />
@@ -188,17 +201,17 @@ const CalendarPage = () => {
                       date: selectedDate.toISOString().split('T')[0] 
                     });
                     setShowNoteModal(true);
-                  }}
-                  className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg"
+                  }}h
+                  className="inline-flex items-center p-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 mr-2"/>Add Note
                 </button>
               </div>
 
               {selectedDateNotes.length > 0 ? (
                 <div className="space-y-3">
                   {selectedDateNotes.map((note) => (
-                    <div key={note._id} className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl">
+                    <div key={note._id} className=" bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-800 dark:text-white mb-2">{note.title}</h3>
@@ -230,8 +243,8 @@ const CalendarPage = () => {
               )}
             </div>
 
-            {/* Events Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-gray-100 dark:border-gray-700 shadow-lg p-6">
+          {/* Events Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg p-4">
               <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
                 <CalendarIcon className="w-5 h-5 mr-2 text-blue-500" />
                 Events for {date.toLocaleDateString()}
@@ -295,65 +308,6 @@ const CalendarPage = () => {
                   </p>
                 </div>
               )}
-            </div>
-
-          </div>
-        </div>
-
-        {/* Quick Stats - Dashboard Style */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 border-blue-100 group-hover:scale-110 transition-transform duration-300">
-                <CheckSquare className="w-6 h-6" />
-              </div>
-              <div className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                +12%
-              </div>
-            </div>
-            
-            <div className="relative z-10">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Tasks</p>
-              <p className="text-3xl font-bold text-gray-800 dark:text-white">{tasks.length}</p>
-            </div>
-          </div>
-
-          <div className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="p-3 rounded-2xl bg-green-50 text-green-600 border-green-100 group-hover:scale-110 transition-transform duration-300">
-                <Target className="w-6 h-6" />
-              </div>
-              <div className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                +8%
-              </div>
-            </div>
-            
-            <div className="relative z-10">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Goals</p>
-              <p className="text-3xl font-bold text-gray-800 dark:text-white">{goals.length}</p>
-            </div>
-          </div>
-
-          <div className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full opacity-20 -translate-y-10 translate-x-10"></div>
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="p-3 rounded-2xl bg-purple-50 text-purple-600 border-purple-100 group-hover:scale-110 transition-transform duration-300">
-                <TrendingUp className="w-6 h-6" />
-              </div>
-              <div className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                +15%
-              </div>
-            </div>
-            
-            <div className="relative z-10">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Completed Tasks</p>
-              <p className="text-3xl font-bold text-gray-800 dark:text-white">{tasks.filter(task => task.status === 'completed').length}</p>
-            </div>
           </div>
         </div>
 
