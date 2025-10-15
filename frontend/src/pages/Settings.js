@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { usersAPI, tasksAPI, goalsAPI, diaryAPI } from '../utils/api';
@@ -13,24 +13,16 @@ const Settings = () => {
     notifications: user?.preferences?.notifications ?? true
   });
 
-  const handleNotificationToggle = async () => {
-    setLoading(true);
+  useEffect(() => {
+    setPreferences({
+      notifications: user?.preferences?.notifications ?? true
+    });
+  }, [user]);
+
+  const handleNotificationToggle = () => {
     const newNotificationSetting = !preferences.notifications;
-    
-    try {
-      const response = await usersAPI.updatePreferences({
-        theme: user?.preferences?.theme || 'light',
-        notifications: newNotificationSetting
-      });
-      
-      setPreferences({ notifications: newNotificationSetting });
-      updateUser(response.data.user);
-      toast.success('Notification preferences updated');
-    } catch (error) {
-      toast.error('Failed to update preferences');
-    } finally {
-      setLoading(false);
-    }
+    setPreferences(prev => ({ ...prev, notifications: newNotificationSetting }));
+    toast.success(`Notifications ${newNotificationSetting ? 'enabled' : 'disabled'}`);
   };
 
   return (
@@ -97,8 +89,7 @@ const Settings = () => {
                 </div>
                 <button
                   onClick={handleNotificationToggle}
-                  disabled={loading}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     preferences.notifications ? 'bg-primary-600' : 'bg-gray-200'
                   }`}
                 >

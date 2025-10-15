@@ -4,7 +4,7 @@ const Alarm = require('../models/Alarm');
 const getAlarms = async (req, res) => {
   try {
     const alarms = await Alarm.find({ userId: req.user._id });
-    res.json(alarms);
+    res.json({ data: alarms });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

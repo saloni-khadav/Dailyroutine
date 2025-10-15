@@ -10,26 +10,61 @@ const Alarms = () => {
   const [alarmMessage, setAlarmMessage] = useState('');
   const [activeTimeouts, setActiveTimeouts] = useState({});
   const [editingAlarm, setEditingAlarm] = useState(null);
+  const [ringingAlarm, setRingingAlarm] = useState(null);
+  const [audioInterval, setAudioInterval] = useState(null);
 
   useEffect(() => {
     fetchAlarms();
   }, []);
 
   useEffect(() => {
-    // Set up timeouts for all alarms
-    alarms.forEach(alarm => {
-      if (alarm.active && !activeTimeouts[alarm._id]) {
-        setupAlarmTimeout(alarm);
-      }
-    });
+    if (Array.isArray(alarms)) {
+      alarms.forEach(alarm => {
+        if (alarm.active && !activeTimeouts[alarm._id]) {
+          setupAlarmTimeout(alarm);
+        }
+      });
+    }
   }, [alarms, activeTimeouts]);
 
   const fetchAlarms = async () => {
     try {
       const response = await alarmsAPI.getAll();
-      setAlarms(response.data);
+      setAlarms(response.data?.data || response.data || []);
     } catch (error) {
+      console.error('Fetch alarms error:', error);
+      setAlarms([]);
       toast.error('Failed to fetch alarms');
+    }
+  };
+
+  const playAlarmSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const interval = setInterval(() => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.5);
+      }, 1000);
+      
+      setAudioInterval(interval);
+    } catch (error) {
+      console.log('Audio not supported');
+    }
+  };
+
+  const stopAlarmSound = () => {
+    if (audioInterval) {
+      clearInterval(audioInterval);
+      setAudioInterval(null);
     }
   };
 
@@ -44,44 +79,46 @@ const Alarms = () => {
     }
 
     const timeUntilAlarm = alarmDate.getTime() - now.getTime();
-    console.log(`Setting alarm for ${alarm.time}, will ring in ${Math.round(timeUntilAlarm / 1000)} seconds`);
     
-    const timeoutId = setTimeout(async () => {
-      console.log(`Alarm ${alarm._id} is ringing!`);
-      // Check if alarm still exists before ringing
-      try {
-        const response = await alarmsAPI.getAll();
-        const currentAlarms = response.data;
-        const alarmExists = currentAlarms.find(a => a._id === alarm._id);
-        
-        if (!alarmExists) {
-          console.log('Alarm was deleted, not ringing');
-          return;
-        }
-        
-        toast.success(`🔔 ${alarm.message}`, {
-          duration: 10000,
-          style: {
-            background: '#3B82F6',
-            color: 'white',
-            fontSize: '16px',
-            padding: '16px'
-          }
-        });
-        
-        if ('speechSynthesis' in window) {
-          const utterance = new SpeechSynthesisUtterance(alarm.message);
-          speechSynthesis.speak(utterance);
-        }
-
-        // Delete alarm after it rings
-        await deleteAlarm(alarm._id);
-      } catch (error) {
-        console.error('Error checking alarm existence:', error);
-      }
+    const timeoutId = setTimeout(() => {
+      setRingingAlarm(alarm);
+      playAlarmSound();
     }, timeUntilAlarm);
 
     setActiveTimeouts(prev => ({ ...prev, [alarm._id]: timeoutId }));
+  };
+
+  const handleDismiss = () => {
+    stopAlarmSound();
+    setRingingAlarm(null);
+    if (ringingAlarm) {
+      const snoozeTime = new Date();
+      snoozeTime.setMinutes(snoozeTime.getMinutes() + 5);
+      const hours = snoozeTime.getHours().toString().padStart(2, '0');
+      const minutes = snoozeTime.getMinutes().toString().padStart(2, '0');
+      
+      const snoozeAlarm = { ...ringingAlarm, time: `${hours}:${minutes}` };
+      setupAlarmTimeout(snoozeAlarm);
+      toast.success('Alarm snoozed for 5 minutes');
+    }
+  };
+
+  const handleRepeat = () => {
+    stopAlarmSound();
+    setRingingAlarm(null);
+    if (ringingAlarm) {
+      setupAlarmTimeout(ringingAlarm);
+      toast.success('Alarm set for tomorrow');
+    }
+  };
+
+  const handleStop = async () => {
+    stopAlarmSound();
+    setRingingAlarm(null);
+    if (ringingAlarm) {
+      await deleteAlarm(ringingAlarm._id);
+      toast.success('Alarm stopped');
+    }
   };
 
   const handleSetAlarm = async (e) => {
@@ -90,7 +127,6 @@ const Alarms = () => {
 
     try {
       if (editingAlarm) {
-        // Clear old timeout
         if (activeTimeouts[editingAlarm._id]) {
           clearTimeout(activeTimeouts[editingAlarm._id]);
         }
@@ -99,7 +135,7 @@ const Alarms = () => {
           time: alarmTime,
           message: alarmMessage || 'Alarm!'
         });
-        toast.success('Alarm updated successfully');
+        toast.success('Alarm updated');
       } else {
         await alarmsAPI.create({
           time: alarmTime,
@@ -114,7 +150,7 @@ const Alarms = () => {
       setAlarmMessage('');
       fetchAlarms();
     } catch (error) {
-      toast.error(editingAlarm ? 'Failed to update alarm' : 'Failed to set alarm');
+      toast.error('Failed to save alarm');
     }
   };
 
@@ -129,7 +165,6 @@ const Alarms = () => {
     try {
       await alarmsAPI.delete(id);
       
-      // Clear timeout if exists
       if (activeTimeouts[id]) {
         clearTimeout(activeTimeouts[id]);
         setActiveTimeouts(prev => {
@@ -156,7 +191,7 @@ const Alarms = () => {
           </h1>
           <button
             onClick={() => setShowModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Alarm
@@ -180,13 +215,13 @@ const Alarms = () => {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleEditAlarm(alarm)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                     >
                       <Edit className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => deleteAlarm(alarm._id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -199,16 +234,61 @@ const Alarms = () => {
           <div className="text-center py-12">
             <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No alarms set</h3>
-            <p className="text-gray-600 dark:text-gray-400">Create your first alarm to get started</p>
+            <p className="text-gray-600 dark:text-gray-400">Create your first alarm</p>
           </div>
         )}
 
-        {/* Modal */}
+        {/* Alarm Ringing Modal */}
+        {ringingAlarm && (
+          <div className="fixed inset-0 bg-gradient-to-br from-blue-200 via-purple-200 to-indigo-300 z-50 flex items-center justify-center">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 p-8 shadow-2xl border-4 border-blue-400">
+              <div className="text-center">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                  <Bell className="w-12 h-12 text-white" />
+                </div>
+                
+                <h2 className="text-3xl font-bold text-blue-600 mb-2">
+                  ALARM!
+                </h2>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  {ringingAlarm.time}
+                </h3>
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                  {ringingAlarm.message}
+                </p>
+                
+                <div className="space-y-3">
+                  <button
+                    onClick={handleDismiss}
+                    className="w-full px-6 py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-lg font-bold"
+                  >
+                    Dismiss (5 min)
+                  </button>
+                  
+                  <button
+                    onClick={handleRepeat}
+                    className="w-full px-6 py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-lg font-bold"
+                  >
+                    Repeat Tomorrow
+                  </button>
+                  
+                  <button
+                    onClick={handleStop}
+                    className="w-full px-6 py-4 bg-red-500 text-white rounded-lg hover:bg-red-600 text-lg font-bold"
+                  >
+                    Stop Alarm
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Set Alarm Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-                <Clock className="w-5 h-5 mr-2 text-blue-600" />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 {editingAlarm ? 'Edit Alarm' : 'Set New Alarm'}
               </h2>
               
@@ -222,7 +302,7 @@ const Alarms = () => {
                     required
                     value={alarmTime}
                     onChange={(e) => setAlarmTime(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -235,7 +315,7 @@ const Alarms = () => {
                     placeholder="Enter alarm message..."
                     value={alarmMessage}
                     onChange={(e) => setAlarmMessage(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
 
@@ -248,15 +328,15 @@ const Alarms = () => {
                       setAlarmTime('');
                       setAlarmMessage('');
                     }}
-                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 transition-colors"
+                    className="px-4 py-2 text-gray-600 dark:text-gray-400"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
-                    {editingAlarm ? 'Update Alarm' : 'Set Alarm'}
+                    {editingAlarm ? 'Update' : 'Set Alarm'}
                   </button>
                 </div>
               </form>
