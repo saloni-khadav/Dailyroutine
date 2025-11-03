@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { tasksAPI, goalsAPI } from '../utils/api';
 import { CheckSquare, Target, Calendar, TrendingUp, BookOpen, Plus, Clock, ArrowRight, Zap, Star, Award, Users } from 'lucide-react';
+import toast from 'react-hot-toast';
 import clndr from '../images/clndr.png';
 import t1 from '../images/t1.png';
 import goal from '../images/goal.png';
@@ -79,7 +80,68 @@ const Dashboard = () => {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   };
+
+  const handleDragStart = (e, task) => {
+    console.log('Drag started:', task.title);
+    setDraggedTask(task);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', task._id);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e, targetStatus) => {
+    e.preventDefault();
+    console.log('Drop event:', targetStatus);
+    
+    if (!draggedTask) {
+      console.log('No dragged task');
+      return;
+    }
+
+    if (draggedTask.status === targetStatus) {
+      console.log('Same status, no update needed');
+      setDraggedTask(null);
+      return;
+    }
+
+    try {
+      console.log('Updating task:', draggedTask._id, 'to status:', targetStatus);
+      await tasksAPI.update(draggedTask._id, { ...draggedTask, status: targetStatus });
+      toast.success(`Task moved to ${targetStatus}`);
+      fetchDashboardData();
+    } catch (error) {
+      console.error('Update error:', error);
+      toast.error('Failed to update task');
+    }
+    setDraggedTask(null);
+  };
+
+  const handleQuickComplete = async (task) => {
+    try {
+      await tasksAPI.update(task._id, { ...task, status: 'completed' });
+      toast.success(`Task "${task.title}" completed! 🎉`);
+      fetchDashboardData();
+    } catch (error) {
+      toast.error('Failed to complete task');
+    }
+  };
+
+  const handleQuickPending = async (task) => {
+    try {
+      await tasksAPI.update(task._id, { ...task, status: 'pending' });
+      toast.success(`Task "${task.title}" moved to pending`);
+      fetchDashboardData();
+    } catch (error) {
+      toast.error('Failed to update task');
+    }
+  };
   const [recentTasks, setRecentTasks] = useState([]);
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [dragOverColumn, setDragOverColumn] = useState(null);
 
   const quickActions = [
     { 
@@ -288,43 +350,143 @@ const Dashboard = () => {
                 </Link>
               </div>
               
-              <div className="space-y-4">
-                {recentTasks.map((task, index) => (
-                  <div
-                    key={task._id}
-                    className="group flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/80 rounded-2xl border border-gray-100 dark:border-gray-600 hover:border-gray-200 dark:hover:border-gray-500 hover:shadow-md transition-all duration-300"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-4 h-4 rounded-full ${
-                        task.status === 'completed' ? 'bg-green-500' :
-                        task.status === 'in-progress' ? 'bg-yellow-500' : 'bg-gray-400'
-                      } group-hover:scale-125 transition-transform duration-300`}></div>
-                      
-                      <div>
-                        <h3 className="font-semibold text-gray-800 dark:text-white group-hover:text-blue-600 transition-colors">
-                          {task.title}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Due: {new Date(task.dueDate).toLocaleDateString()}
-                        </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {/* Pending Tasks */}
+                <div 
+                  className="space-y-3 p-4 rounded-2xl bg-red-50/30 dark:bg-red-900/20 border-2 border-dashed border-red-200 dark:border-red-700"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, 'pending')}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base sm:text-lg font-semibold text-red-600 dark:text-red-400 flex items-center">
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Pending </span>({recentTasks.filter(task => task.status === 'pending').length})
+                    </h3>
+                  </div>
+                  {recentTasks.filter(task => task.status === 'pending').map((task) => (
+                    <div
+                      key={task._id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, task)}
+                      className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700 hover:shadow-lg transition-all duration-300 cursor-move"
+                    >
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-400 animate-pulse"></div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-800 dark:text-white text-xs sm:text-sm truncate">{task.title}</h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {task.priority}
+                        </span>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        task.priority === 'high' ? 'bg-red-100 text-red-700 border border-red-200' :
-                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
-                        'bg-green-100 text-green-700 border border-green-200'
-                      }`}>
-                        {task.priority}
-                      </span>
-                      
-                      {task.status === 'completed' && (
-                        <Star className="w-5 h-5 text-yellow-500" />
-                      )}
+                  ))}
+                  {recentTasks.filter(task => task.status === 'pending').length === 0 && (
+                    <div className="p-6 text-center text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl">
+                      <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Drop tasks here to mark as pending</p>
                     </div>
+                  )}
+                </div>
+
+                {/* In Progress Tasks */}
+                <div 
+                  className="space-y-3 p-4 rounded-2xl bg-yellow-50/30 dark:bg-yellow-900/20 border-2 border-dashed border-yellow-200 dark:border-yellow-700"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, 'in-progress')}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base sm:text-lg font-semibold text-yellow-600 dark:text-yellow-400 flex items-center">
+                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">In Progress </span>({recentTasks.filter(task => task.status === 'in-progress').length})
+                    </h3>
                   </div>
-                ))}
+                  {recentTasks.filter(task => task.status === 'in-progress').map((task) => (
+                    <div
+                      key={task._id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, task)}
+                      className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-yellow-200 dark:border-yellow-800 hover:border-yellow-300 dark:hover:border-yellow-700 hover:shadow-lg transition-all duration-300 cursor-move"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-3 h-3 rounded-full bg-yellow-400 animate-spin"></div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-800 dark:text-white text-sm">{task.title}</h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {task.priority}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {recentTasks.filter(task => task.status === 'in-progress').length === 0 && (
+                    <div className="p-6 text-center text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl">
+                      <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Drop tasks here to mark as in progress</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Completed Tasks */}
+                <div 
+                  className="space-y-3 p-4 rounded-2xl bg-green-50/30 dark:bg-green-900/20 border-2 border-dashed border-green-200 dark:border-green-700"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, 'completed')}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base sm:text-lg font-semibold text-green-600 dark:text-green-400 flex items-center">
+                      <CheckSquare className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Completed </span>({recentTasks.filter(task => task.status === 'completed').length})
+                    </h3>
+                  </div>
+                  {recentTasks.filter(task => task.status === 'completed').map((task) => (
+                    <div
+                      key={task._id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, task)}
+                      className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 hover:shadow-lg transition-all duration-300 cursor-move"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-800 dark:text-white text-sm line-through opacity-75">{task.title}</h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Completed: {new Date(task.updatedAt || task.dueDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {task.priority}
+                        </span>
+                        <Star className="w-4 h-4 text-yellow-500" />
+
+                      </div>
+                    </div>
+                  ))}
+                  {recentTasks.filter(task => task.status === 'completed').length === 0 && (
+                    <div className="p-6 text-center text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl">
+                      <CheckSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Drop tasks here to mark as completed</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {recentTasks.length === 0 && (
