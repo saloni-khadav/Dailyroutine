@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AlarmProvider } from './context/AlarmContext';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -110,7 +111,9 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <Router>
-          <AppContent />
+          <AlarmProvider>
+            <AppContent />
+          </AlarmProvider>
         </Router>
       </ThemeProvider>
     </AuthProvider>
