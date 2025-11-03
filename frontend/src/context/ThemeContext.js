@@ -15,7 +15,7 @@ export const ThemeProvider = ({ children }) => {
       const savedTheme = localStorage.getItem('theme') || 'light';
       setTheme(savedTheme);
     }
-  }, [user]);
+  }, [user?.preferences?.theme]);
 
   useEffect(() => {
     console.log('Theme changed to:', theme);
@@ -37,6 +37,8 @@ export const ThemeProvider = ({ children }) => {
     if (user) {
       try {
         const res = await axios.put('/api/users/preferences', {
+
+          
           theme: newTheme,
           notifications: user.preferences.notifications
         });

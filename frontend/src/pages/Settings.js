@@ -19,9 +19,24 @@ const Settings = () => {
     });
   }, [user]);
 
-  const handleNotificationToggle = () => {
+  const handleNotificationToggle = async () => {
     const newNotificationSetting = !preferences.notifications;
     setPreferences(prev => ({ ...prev, notifications: newNotificationSetting }));
+    
+    if (user) {
+      try {
+        const res = await usersAPI.updatePreferences({
+          theme: user.preferences?.theme || 'light',
+          notifications: newNotificationSetting
+        });
+        updateUser(res.data.user);
+      } catch (error) {
+        console.error('Failed to update notification preference:', error);
+        setPreferences(prev => ({ ...prev, notifications: !newNotificationSetting }));
+        toast.error('Failed to update notification setting');
+        return;
+      }
+    }
     toast.success(`Notifications ${newNotificationSetting ? 'enabled' : 'disabled'}`);
   };
 

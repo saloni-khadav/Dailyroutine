@@ -321,14 +321,14 @@ const Diary = () => {
                       <img src={entry.image} alt="Diary entry" className="w-48 h-auto rounded-lg" />
                     </div>
                     <div className="flex-1 prose dark:prose-invert max-w-none">
-                      <p className="whitespace-pre-wrap" style={{ color: entry.textColor || '#374151', fontSize: `${entry.textSize || 16}px` }}>
+                      <p className="whitespace-pre-wrap text-gray-900 dark:text-white" style={{ fontSize: `${entry.textSize || 16}px` }}>
                         {entry.content}
                       </p>
                     </div>
                   </div>
                 ) : (
                   <div className="prose dark:prose-invert max-w-none">
-                    <p className="whitespace-pre-wrap" style={{ color: entry.textColor || '#374151', fontSize: `${entry.textSize || 16}px` }}>
+                    <p className="whitespace-pre-wrap text-gray-900 dark:text-white" style={{ fontSize: `${entry.textSize || 16}px` }}>
                       {entry.content}
                     </p>
                   </div>

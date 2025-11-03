@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { usersAPI } from '../utils/api';
 import { User, Save, Upload, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
@@ -246,7 +248,7 @@ const Profile = () => {
                 <div className="grid grid-cols-1 gap-4">
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                     <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                      {user?.preferences?.theme || 'light'}
+                      {theme}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Current Theme</div>
                   </div>
