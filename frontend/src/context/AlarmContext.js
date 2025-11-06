@@ -23,53 +23,19 @@ export const AlarmProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      console.log('🔑 Token found, fetching alarms...');
       fetchAlarms();
-    } else {
-      console.log('❌ No token found');
     }
   }, []);
 
-  // Persist timeouts across page navigation
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      console.log('💾 Saving alarm timeouts to localStorage');
-      const timeoutData = {};
-      Object.keys(activeTimeouts).forEach(alarmId => {
-        const alarm = alarms.find(a => a._id === alarmId);
-        if (alarm) {
-          timeoutData[alarmId] = {
-            alarmTime: alarm.time,
-            setAt: Date.now()
-          };
-        }
-      });
-      localStorage.setItem('alarmTimeouts', JSON.stringify(timeoutData));
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [activeTimeouts, alarms]);
-
   useEffect(() => {
     if (Array.isArray(alarms)) {
-      console.log('🔄 Processing alarms:', alarms.length);
-      
-      // Clear all existing timeouts first
-      Object.values(activeTimeouts).forEach(timeoutId => {
-        clearTimeout(timeoutId);
-      });
-      setActiveTimeouts({});
-      
-      // Set up fresh timeouts for all active alarms
       alarms.forEach(alarm => {
-        if (alarm.active) {
-          console.log('✅ Setting up fresh timeout for alarm:', alarm.time);
+        if (alarm.active && !activeTimeouts[alarm._id]) {
           setupAlarmTimeout(alarm);
         }
       });
     }
-  }, [alarms]);
+  }, [alarms, activeTimeouts]);
 
   const fetchAlarms = async () => {
     try {
@@ -122,26 +88,11 @@ export const AlarmProvider = ({ children }) => {
     }
 
     const timeUntilAlarm = alarmDate.getTime() - now.getTime();
-    console.log('🚨 Setting alarm timeout:', { 
-      alarmTime: alarm.time, 
-      timeUntilAlarm: timeUntilAlarm,
-      willRingAt: new Date(now.getTime() + timeUntilAlarm).toLocaleString()
-    });
-    
-    // For testing - if alarm is for today but time has passed, set for next minute
-    let actualTimeout = timeUntilAlarm;
-    if (timeUntilAlarm <= 0) {
-      console.log('⚠️ Alarm time has passed, setting for next minute for testing');
-      actualTimeout = 60000; // 1 minute
-    }
     
     const timeoutId = setTimeout(() => {
-      console.log('🚨🚨🚨 ALARM RINGING NOW!', alarm);
-      console.log('🚨 Setting ringingAlarm state to:', alarm);
       setRingingAlarm(alarm);
       playAlarmSound();
-      console.log('🚨 Alarm state should now be set');
-    }, actualTimeout);
+    }, timeUntilAlarm);
 
     setActiveTimeouts(prev => ({ ...prev, [alarm._id]: timeoutId }));
   };
@@ -199,95 +150,68 @@ export const AlarmProvider = ({ children }) => {
     fetchAlarms,
     setupAlarmTimeout,
     activeTimeouts,
-    setActiveTimeouts,
-    setRingingAlarm,
-    ringingAlarm
+    setActiveTimeouts
   };
 
-  return (
-    <AlarmContext.Provider value={value}>
-      {children}
-      {(() => {
-        console.log('🔍 Checking ringingAlarm state:', ringingAlarm);
-        if (!ringingAlarm) {
-          console.log('🚫 No ringing alarm, not showing popup');
-          return null;
-        }
-        console.log('🚨 RENDERING ALARM POPUP NOW!', ringingAlarm);
-        return createPortal(
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100vh',
-              zIndex: 2147483647,
-              background: 'rgba(239, 68, 68, 0.95)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'auto'
-            }}
-          >
-            <div 
-              style={{
-                background: 'white',
-                borderRadius: '24px',
-                padding: '32px',
-                maxWidth: '400px',
-                width: '90%',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                border: '8px solid #dc2626',
-                position: 'relative',
-                zIndex: 2147483648
-              }}
-            >
+  const AlarmModal = () => {
+    if (!ringingAlarm) return null;
+
+    return createPortal(
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center"
+        style={{ zIndex: 2147483647 }}
+      >
+        <div className="bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500 p-1 rounded-3xl animate-pulse">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-md w-full mx-4 p-8 shadow-2xl">
             <div className="text-center">
-              <div className="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+              <div className="w-24 h-24 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
                 <Bell className="w-12 h-12 text-white animate-pulse" />
               </div>
               
               <h2 className="text-4xl font-bold text-red-600 mb-2 animate-pulse">
-                🚨 ALARM RINGING! 🚨
+                🚨 ALARM! 🚨
               </h2>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 {ringingAlarm.time}
               </h3>
-              <p className="text-lg text-gray-600 mb-8">
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
                 {ringingAlarm.message}
               </p>
               
               <div className="space-y-3">
                 <button
                   onClick={handleDismiss}
-                  className="w-full px-6 py-4 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 text-lg font-bold"
+                  className="w-full px-6 py-4 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 text-lg font-bold transition-all transform hover:scale-105"
                 >
                   ⏰ Snooze (5 min)
                 </button>
                 
                 <button
                   onClick={handleRepeat}
-                  className="w-full px-6 py-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 text-lg font-bold"
+                  className="w-full px-6 py-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 text-lg font-bold transition-all transform hover:scale-105"
                 >
                   🔁 Repeat Tomorrow
                 </button>
                 
                 <button
                   onClick={handleStop}
-                  className="w-full px-6 py-4 bg-red-500 text-white rounded-xl hover:bg-red-600 text-lg font-bold"
+                  className="w-full px-6 py-4 bg-red-500 text-white rounded-xl hover:bg-red-600 text-lg font-bold transition-all transform hover:scale-105"
                 >
                   ❌ Stop Alarm
                 </button>
               </div>
             </div>
           </div>
-        </div>,
-        document.body
-      );
-      })()}
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
+  return (
+    <AlarmContext.Provider value={value}>
+      {children}
+      <AlarmModal />
     </AlarmContext.Provider>
   );
 };

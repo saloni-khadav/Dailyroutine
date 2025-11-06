@@ -19,6 +19,9 @@ const Dashboard = () => {
     goals: { total: 0, completed: 0 }
   });
   const [loading, setLoading] = useState(true);
+  const [recentTasks, setRecentTasks] = useState([]);
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [dragOverColumn, setDragOverColumn] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -28,7 +31,6 @@ const Dashboard = () => {
     try {
       console.log('Fetching dashboard data...');
       
-      // Try to fetch tasks and goals, handle errors gracefully
       let tasks = [];
       let goals = [];
       
@@ -63,7 +65,6 @@ const Dashboard = () => {
         }
       });
       
-      // Get recent tasks (last 5)
       const sortedTasks = tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setRecentTasks(sortedTasks.slice(0, 5));
       
@@ -82,7 +83,6 @@ const Dashboard = () => {
   };
 
   const handleDragStart = (e, task) => {
-    console.log('Drag started:', task.title);
     setDraggedTask(task);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', task._id);
@@ -95,26 +95,17 @@ const Dashboard = () => {
 
   const handleDrop = async (e, targetStatus) => {
     e.preventDefault();
-    console.log('Drop event:', targetStatus);
     
-    if (!draggedTask) {
-      console.log('No dragged task');
-      return;
-    }
-
-    if (draggedTask.status === targetStatus) {
-      console.log('Same status, no update needed');
+    if (!draggedTask || draggedTask.status === targetStatus) {
       setDraggedTask(null);
       return;
     }
 
     try {
-      console.log('Updating task:', draggedTask._id, 'to status:', targetStatus);
       await tasksAPI.update(draggedTask._id, { ...draggedTask, status: targetStatus });
       toast.success(`Task moved to ${targetStatus}`);
       fetchDashboardData();
     } catch (error) {
-      console.error('Update error:', error);
       toast.error('Failed to update task');
     }
     setDraggedTask(null);
@@ -139,9 +130,6 @@ const Dashboard = () => {
       toast.error('Failed to update task');
     }
   };
-  const [recentTasks, setRecentTasks] = useState([]);
-  const [draggedTask, setDraggedTask] = useState(null);
-  const [dragOverColumn, setDragOverColumn] = useState(null);
 
   const quickActions = [
     { 
@@ -228,7 +216,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-4">
       <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
-        {/* Welcome Section with Image */}
+        {/* Welcome Section */}
         <div className="mb-4">
           <div className="grid lg:grid-cols-3 gap-8 items-center">
             <div className="lg:col-span-2">
@@ -273,34 +261,34 @@ const Dashboard = () => {
             ))}
           </div>
         ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
-          {statCards.map((card, index) => (
-            <div
-              key={index}
-              className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
-            >
-              <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${card.bgGradient} rounded-full opacity-20 -translate-y-10 translate-x-10`}></div>
-              
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className={`p-3 rounded-2xl ${card.color} group-hover:scale-110 transition-transform duration-300`}>
-                  {card.icon}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
+            {statCards.map((card, index) => (
+              <div
+                key={index}
+                className="group relative p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
+              >
+                <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${card.bgGradient} rounded-full opacity-20 -translate-y-10 translate-x-10`}></div>
+                
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className={`p-3 rounded-2xl ${card.color} group-hover:scale-110 transition-transform duration-300`}>
+                    {card.icon}
+                  </div>
+                  <div className={`text-sm font-semibold ${card.changeColor} bg-green-50 px-2 py-1 rounded-full`}>
+                    {card.change}
+                  </div>
                 </div>
-                <div className={`text-sm font-semibold ${card.changeColor} bg-green-50 px-2 py-1 rounded-full`}>
-                  {card.change}
+                
+                <div className="relative z-10">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{card.title}</p>
+                  <p className="text-3xl font-bold text-gray-800 dark:text-white">{card.value}</p>
                 </div>
               </div>
-              
-              <div className="relative z-10">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{card.title}</p>
-                <p className="text-3xl font-bold text-gray-800 dark:text-white">{card.value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Quick Actions with Images */}
+          {/* Quick Actions */}
           <div className="lg:col-span-3">
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 p-8 shadow-lg">
               <div className="flex items-center justify-between mb-6">
@@ -350,159 +338,50 @@ const Dashboard = () => {
                 </Link>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {/* Pending Tasks */}
-                <div 
-                  className="space-y-3 p-4 rounded-2xl bg-red-50/30 dark:bg-red-900/20 border-2 border-dashed border-red-200 dark:border-red-700"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, 'pending')}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base sm:text-lg font-semibold text-red-600 dark:text-red-400 flex items-center">
-                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Pending </span>({recentTasks.filter(task => task.status === 'pending').length})
-                    </h3>
+              <div className="space-y-4">
+                {recentTasks.map((task, index) => (
+                  <div
+                    key={task._id}
+                    className="group flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/80 rounded-2xl border border-gray-100 dark:border-gray-600 hover:border-gray-200 dark:hover:border-gray-500 hover:shadow-md transition-all duration-300"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-4 h-4 rounded-full ${
+                        task.status === 'completed' ? 'bg-green-500' :
+                        task.status === 'in-progress' ? 'bg-yellow-500' : 'bg-gray-400'
+                      } group-hover:scale-125 transition-transform duration-300`}></div>
+                      
+                      <div>
+                        <h3 className="font-semibold text-gray-800 dark:text-white group-hover:text-blue-600 transition-colors">
+                          {task.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Due: {new Date(task.dueDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        task.priority === 'high' ? 'bg-red-100 text-red-700 border border-red-200' :
+                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                        'bg-green-100 text-green-700 border border-green-200'
+                      }`}>
+                        {task.priority}
+                      </span>
+                      
+                      {task.status === 'completed' && (
+                        <Star className="w-5 h-5 text-yellow-500" />
+                      )}
+                    </div>
                   </div>
-                  {recentTasks.filter(task => task.status === 'pending').map((task) => (
-                    <div
-                      key={task._id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, task)}
-                      className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700 hover:shadow-lg transition-all duration-300 cursor-move"
-                    >
-                      <div className="flex items-center space-x-2 sm:space-x-3">
-                        <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-400 animate-pulse"></div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-800 dark:text-white text-xs sm:text-sm truncate">{task.title}</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
-                          {task.priority}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {recentTasks.filter(task => task.status === 'pending').length === 0 && (
-                    <div className="p-6 text-center text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl">
-                      <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Drop tasks here to mark as pending</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* In Progress Tasks */}
-                <div 
-                  className="space-y-3 p-4 rounded-2xl bg-yellow-50/30 dark:bg-yellow-900/20 border-2 border-dashed border-yellow-200 dark:border-yellow-700"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, 'in-progress')}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base sm:text-lg font-semibold text-yellow-600 dark:text-yellow-400 flex items-center">
-                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">In Progress </span>({recentTasks.filter(task => task.status === 'in-progress').length})
-                    </h3>
-                  </div>
-                  {recentTasks.filter(task => task.status === 'in-progress').map((task) => (
-                    <div
-                      key={task._id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, task)}
-                      className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-yellow-200 dark:border-yellow-800 hover:border-yellow-300 dark:hover:border-yellow-700 hover:shadow-lg transition-all duration-300 cursor-move"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-3 h-3 rounded-full bg-yellow-400 animate-spin"></div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-800 dark:text-white text-sm">{task.title}</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
-                          {task.priority}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {recentTasks.filter(task => task.status === 'in-progress').length === 0 && (
-                    <div className="p-6 text-center text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl">
-                      <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Drop tasks here to mark as in progress</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Completed Tasks */}
-                <div 
-                  className="space-y-3 p-4 rounded-2xl bg-green-50/30 dark:bg-green-900/20 border-2 border-dashed border-green-200 dark:border-green-700"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, 'completed')}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base sm:text-lg font-semibold text-green-600 dark:text-green-400 flex items-center">
-                      <CheckSquare className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Completed </span>({recentTasks.filter(task => task.status === 'completed').length})
-                    </h3>
-                  </div>
-                  {recentTasks.filter(task => task.status === 'completed').map((task) => (
-                    <div
-                      key={task._id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, task)}
-                      className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 hover:shadow-lg transition-all duration-300 cursor-move"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-800 dark:text-white text-sm line-through opacity-75">{task.title}</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Completed: {new Date(task.updatedAt || task.dueDate).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
-                          {task.priority}
-                        </span>
-                        <Star className="w-4 h-4 text-yellow-500" />
-
-                      </div>
-                    </div>
-                  ))}
-                  {recentTasks.filter(task => task.status === 'completed').length === 0 && (
-                    <div className="p-6 text-center text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl">
-                      <CheckSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Drop tasks here to mark as completed</p>
-                    </div>
-                  )}
-                </div>
+                ))}
               </div>
 
               {recentTasks.length === 0 && (
                 <div className="text-center py-12">
-                  <div className="relative mb-6">
-                    <img 
-                      src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=200&h=150&fit=crop&crop=center" 
-                      alt="No tasks"
-                      className="w-24 h-18 sm:w-28 sm:h-20 md:w-32 md:h-24 object-cover rounded-2xl mx-auto opacity-50"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <CheckSquare className="w-12 h-12 text-blue-600" />
-                    </div>
-                  </div>
+                  <CheckSquare className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">No tasks yet!</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">Create your first task to get started on your productivity journey.</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">Create your first task to get started.</p>
                   <Link
                     to="/tasks"
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -515,39 +394,9 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
-        {/* Motivational Section with Image */}
-        <div className="mt-4">
-          <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-white overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
-            
-            <div className="grid lg:grid-cols-3 gap-8 items-center relative z-10">
-              <div className="lg:col-span-2">
-                <h3 className="text-2xl font-bold mb-2">
-                  "The secret of getting ahead is getting started."
-                </h3>
-                <p className="text-blue-100 mb-4">- Mark Twain</p>
-                <p className="text-blue-100">
-                  Keep pushing forward! You're doing great with your productivity journey.
-                </p>
-              </div>
-              <div className="lg:col-span-1">
-                <img 
-                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=200&fit=crop&crop=center" 
-                  alt="Motivation"
-                  className="w-full h-24 sm:h-28 md:h-32 object-cover rounded-2xl opacity-80"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
 };
 
 export default Dashboard;
-
-
-// https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&h=300&fit=crop&crop=center" 

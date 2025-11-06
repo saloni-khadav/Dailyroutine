@@ -110,11 +110,11 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <Router>
-          <AlarmProvider>
+        <AlarmProvider>
+          <Router>
             <AppContent />
-          </AlarmProvider>
-        </Router>
+          </Router>
+        </AlarmProvider>
       </ThemeProvider>
     </AuthProvider>
   );
