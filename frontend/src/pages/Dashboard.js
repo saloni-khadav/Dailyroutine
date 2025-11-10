@@ -24,6 +24,88 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  const checkTaskTimes = async () => {
+    if (!user?.preferences?.notifications) return;
+    
+    try {
+      const tasksRes = await tasksAPI.getAll({ page: 1, limit: 1000 });
+      const tasks = tasksRes.data?.tasks || [];
+      const now = new Date();
+      
+      tasks.forEach(task => {
+        if (task.status === 'completed') return;
+        
+        const dueDate = new Date(task.dueDate);
+        const timeDiff = dueDate.getTime() - now.getTime();
+        
+        // Task starting (due date reached)
+        if (Math.abs(timeDiff) < 60000 && timeDiff <= 0) { // Within 1 minute of due time
+          toast.success(`🚀 Task "${task.title}" is starting now!`, {
+            duration: 4000
+          });
+        }
+        
+        // Task ending (1 hour after due date)
+        const endTime = new Date(dueDate.getTime() + 60 * 60 * 1000); // 1 hour after due
+        const endTimeDiff = endTime.getTime() - now.getTime();
+        
+        if (Math.abs(endTimeDiff) < 60000 && endTimeDiff <= 0) { // Within 1 minute of end time
+          toast((t) => (
+            <div className="flex flex-col space-y-2">
+              <span>⏰ Task "{task.title}" time is up!</span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => {
+                    handleTaskStatusUpdate(task._id, 'completed');
+                    toast.dismiss(t.id);
+                  }}
+                  className="px-3 py-1 bg-green-500 text-white rounded text-sm"
+                >
+                  Complete
+                </button>
+                <button
+                  onClick={() => {
+                    handleTaskStatusUpdate(task._id, 'in-progress');
+                    toast.dismiss(t.id);
+                  }}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded text-sm"
+                >
+                  In Progress
+                </button>
+                <button
+                  onClick={() => {
+                    handleTaskStatusUpdate(task._id, 'pending');
+                    toast.dismiss(t.id);
+                  }}
+                  className="px-3 py-1 bg-red-500 text-white rounded text-sm"
+                >
+                  Pending
+                </button>
+              </div>
+            </div>
+          ), {
+            duration: 10000
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Failed to check task times:', error);
+    }
+  };
+  
+  const handleTaskStatusUpdate = async (taskId, status) => {
+    try {
+      const task = recentTasks.find(t => t._id === taskId);
+      if (task) {
+        await tasksAPI.update(taskId, { ...task, status });
+        toast.success(`Task updated to ${status}`);
+        fetchDashboardData();
+      }
+    } catch (error) {
+      toast.error('Failed to update task');
+    }
+  };
+
   const fetchDashboardData = async () => {
     try {
       console.log('Fetching dashboard data...');
@@ -92,10 +174,13 @@ const Dashboard = () => {
     if (task.status === 'in-progress') borderColor = '#d97706'; // yellow
     if (task.status === 'completed') borderColor = '#059669'; // darker green
     
-    // Create white drag image
+    // Check if dark theme is active
+    const isDarkTheme = document.documentElement.classList.contains('dark');
+    
+    // Create theme-aware drag image
     const dragElement = e.target.cloneNode(true);
-    dragElement.style.backgroundColor = '#ffffff';
-    dragElement.style.color = '#1f2937';
+    dragElement.style.backgroundColor = isDarkTheme ? '#374151' : '#ffffff';
+    dragElement.style.color = isDarkTheme ? '#ffffff' : '#1f2937';
     dragElement.style.border = `2px solid ${borderColor}`;
     dragElement.style.borderRadius = '12px';
     dragElement.style.position = 'absolute';
@@ -110,7 +195,7 @@ const Dashboard = () => {
     allElements.forEach(el => {
       el.style.textDecoration = 'none';
       el.style.opacity = '1';
-      el.style.color = '#1f2937';
+      el.style.color = isDarkTheme ? '#ffffff' : '#1f2937';
     });
     document.body.appendChild(dragElement);
     e.dataTransfer.setDragImage(dragElement, e.target.offsetWidth / 2, e.target.offsetHeight / 2);
@@ -394,7 +479,7 @@ const Dashboard = () => {
                 </Link>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 {/* Pending Tasks */}
                 <div 
                   className="space-y-3 p-4 rounded-2xl bg-red-50/30 dark:bg-red-900/20 border-2 border-dashed border-red-200 dark:border-red-700"
@@ -519,7 +604,7 @@ const Dashboard = () => {
                       <div className="flex items-center space-x-3">
                         <div className="w-3 h-3 rounded-full bg-green-500"></div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-800 dark:text-white text-sm line-through opacity-75">{task.title}</h4>
+                          <h4 className="font-semibold text-gray-800 dark:text-white text-sm">{task.title}</h4>
                           <p className="text-xs text-gray-500 dark:text-gray-400">Completed: {new Date(task.updatedAt || task.dueDate).toLocaleDateString()}</p>
                         </div>
                       </div>
