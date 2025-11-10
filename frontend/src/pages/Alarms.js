@@ -1,125 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Plus, Trash2, Bell, Edit } from 'lucide-react';
 import { alarmsAPI } from '../utils/api';
+import { useAlarm } from '../context/AlarmContext';
 import toast from 'react-hot-toast';
 
 const Alarms = () => {
-  const [alarms, setAlarms] = useState([]);
+  const { alarms, fetchAlarms } = useAlarm();
   const [showModal, setShowModal] = useState(false);
   const [alarmTime, setAlarmTime] = useState('');
   const [alarmMessage, setAlarmMessage] = useState('');
-  const [activeTimeouts, setActiveTimeouts] = useState({});
   const [editingAlarm, setEditingAlarm] = useState(null);
-  const [ringingAlarm, setRingingAlarm] = useState(null);
-  const [audioInterval, setAudioInterval] = useState(null);
 
   useEffect(() => {
     fetchAlarms();
   }, []);
 
-  useEffect(() => {
-    if (Array.isArray(alarms)) {
-      alarms.forEach(alarm => {
-        if (alarm.active && !activeTimeouts[alarm._id]) {
-          setupAlarmTimeout(alarm);
-        }
-      });
-    }
-  }, [alarms, activeTimeouts]);
 
-  const fetchAlarms = async () => {
-    try {
-      const response = await alarmsAPI.getAll();
-      setAlarms(response.data?.data || response.data || []);
-    } catch (error) {
-      console.error('Fetch alarms error:', error);
-      setAlarms([]);
-      toast.error('Failed to fetch alarms');
-    }
-  };
-
-  const playAlarmSound = () => {
-    try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const interval = setInterval(() => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.5);
-      }, 1000);
-      
-      setAudioInterval(interval);
-    } catch (error) {
-      console.log('Audio not supported');
-    }
-  };
-
-  const stopAlarmSound = () => {
-    if (audioInterval) {
-      clearInterval(audioInterval);
-      setAudioInterval(null);
-    }
-  };
-
-  const setupAlarmTimeout = (alarm) => {
-    const now = new Date();
-    const [hours, minutes] = alarm.time.split(':');
-    const alarmDate = new Date();
-    alarmDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-
-    if (alarmDate <= now) {
-      alarmDate.setDate(alarmDate.getDate() + 1);
-    }
-
-    const timeUntilAlarm = alarmDate.getTime() - now.getTime();
-    
-    const timeoutId = setTimeout(() => {
-      setRingingAlarm(alarm);
-      playAlarmSound();
-    }, timeUntilAlarm);
-
-    setActiveTimeouts(prev => ({ ...prev, [alarm._id]: timeoutId }));
-  };
-
-  const handleDismiss = () => {
-    stopAlarmSound();
-    setRingingAlarm(null);
-    if (ringingAlarm) {
-      const snoozeTime = new Date();
-      snoozeTime.setMinutes(snoozeTime.getMinutes() + 5);
-      const hours = snoozeTime.getHours().toString().padStart(2, '0');
-      const minutes = snoozeTime.getMinutes().toString().padStart(2, '0');
-      
-      const snoozeAlarm = { ...ringingAlarm, time: `${hours}:${minutes}` };
-      setupAlarmTimeout(snoozeAlarm);
-      toast.success('Alarm snoozed for 5 minutes');
-    }
-  };
-
-  const handleRepeat = () => {
-    stopAlarmSound();
-    setRingingAlarm(null);
-    if (ringingAlarm) {
-      setupAlarmTimeout(ringingAlarm);
-      toast.success('Alarm set for tomorrow');
-    }
-  };
-
-  const handleStop = async () => {
-    stopAlarmSound();
-    setRingingAlarm(null);
-    if (ringingAlarm) {
-      await deleteAlarm(ringingAlarm._id);
-      toast.success('Alarm stopped');
-    }
-  };
 
   const handleSetAlarm = async (e) => {
     e.preventDefault();
@@ -139,7 +35,8 @@ const Alarms = () => {
       } else {
         await alarmsAPI.create({
           time: alarmTime,
-          message: alarmMessage || 'Alarm!'
+          message: alarmMessage || 'Alarm!',
+          active: true
         });
         toast.success(`Alarm set for ${alarmTime}`);
       }
@@ -164,16 +61,6 @@ const Alarms = () => {
   const deleteAlarm = async (id) => {
     try {
       await alarmsAPI.delete(id);
-      
-      if (activeTimeouts[id]) {
-        clearTimeout(activeTimeouts[id]);
-        setActiveTimeouts(prev => {
-          const newTimeouts = { ...prev };
-          delete newTimeouts[id];
-          return newTimeouts;
-        });
-      }
-      
       toast.success('Alarm deleted');
       fetchAlarms();
     } catch (error) {
@@ -238,51 +125,7 @@ const Alarms = () => {
           </div>
         )}
 
-        {/* Alarm Ringing Modal */}
-        {ringingAlarm && (
-          <div className="fixed inset-0 bg-gradient-to-br from-blue-200 via-purple-200 to-indigo-300 z-50 flex items-center justify-center">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 p-8 shadow-2xl border-4 border-blue-400">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-                  <Bell className="w-12 h-12 text-white" />
-                </div>
-                
-                <h2 className="text-3xl font-bold text-blue-600 mb-2">
-                  ALARM!
-                </h2>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  {ringingAlarm.time}
-                </h3>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                  {ringingAlarm.message}
-                </p>
-                
-                <div className="space-y-3">
-                  <button
-                    onClick={handleDismiss}
-                    className="w-full px-6 py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-lg font-bold"
-                  >
-                    Dismiss (5 min)
-                  </button>
-                  
-                  <button
-                    onClick={handleRepeat}
-                    className="w-full px-6 py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-lg font-bold"
-                  >
-                    Repeat Tomorrow
-                  </button>
-                  
-                  <button
-                    onClick={handleStop}
-                    className="w-full px-6 py-4 bg-red-500 text-white rounded-lg hover:bg-red-600 text-lg font-bold"
-                  >
-                    Stop Alarm
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Set Alarm Modal */}
         {showModal && (

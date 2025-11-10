@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AlarmProvider } from './context/AlarmContext';
+import globalAlarmManager from './context/GlobalAlarmManager';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -32,6 +33,11 @@ function AppContent() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
+  
+  useEffect(() => {
+    // Initialize global alarm manager
+    globalAlarmManager.init();
+  }, []);
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -110,11 +116,11 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <AlarmProvider>
-          <Router>
+        <Router>
+          <AlarmProvider>
             <AppContent />
-          </Router>
-        </AlarmProvider>
+          </AlarmProvider>
+        </Router>
       </ThemeProvider>
     </AuthProvider>
   );

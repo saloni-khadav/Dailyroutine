@@ -324,11 +324,11 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Recent Tasks */}
+          {/* Drag & Drop Task Board */}
           <div className="lg:col-span-3">
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl border-2 border-gray-100 dark:border-gray-700 p-8 shadow-lg">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Recent Tasks</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Task Board</h2>
                 <Link
                   to="/tasks"
                   className="flex items-center text-blue-600 hover:text-blue-700 font-medium group"
@@ -338,50 +338,174 @@ const Dashboard = () => {
                 </Link>
               </div>
               
-              <div className="space-y-4">
-                {recentTasks.map((task, index) => (
-                  <div
-                    key={task._id}
-                    className="group flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/80 rounded-2xl border border-gray-100 dark:border-gray-600 hover:border-gray-200 dark:hover:border-gray-500 hover:shadow-md transition-all duration-300"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-4 h-4 rounded-full ${
-                        task.status === 'completed' ? 'bg-green-500' :
-                        task.status === 'in-progress' ? 'bg-yellow-500' : 'bg-gray-400'
-                      } group-hover:scale-125 transition-transform duration-300`}></div>
-                      
-                      <div>
-                        <h3 className="font-semibold text-gray-800 dark:text-white group-hover:text-blue-600 transition-colors">
-                          {task.title}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Pending Column */}
+                <div 
+                  className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
+                    dragOverColumn === 'pending' 
+                      ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20' 
+                      : 'border-purple-200 bg-purple-50/50 dark:bg-purple-900/10'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, 'pending')}
+                  onDragEnter={() => setDragOverColumn('pending')}
+                  onDragLeave={() => setDragOverColumn(null)}
+                >
+                  <h3 className="font-semibold text-purple-700 dark:text-purple-300 mb-3 flex items-center">
+                    <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                    Pending ({recentTasks.filter(t => t.status === 'pending').length})
+                  </h3>
+                  <div className="space-y-2">
+                    {recentTasks.filter(task => task.status === 'pending').map(task => (
+                      <div
+                        key={task._id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, task)}
+                        className="p-3 bg-white dark:bg-gray-700 rounded-lg border border-purple-200 dark:border-purple-600 cursor-move hover:shadow-md transition-all duration-200 group"
+                      >
+                        <h4 className="font-medium text-gray-800 dark:text-white text-sm mb-1">{task.title}</h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
                           Due: {new Date(task.dueDate).toLocaleDateString()}
                         </p>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            {task.priority}
+                          </span>
+                          <button
+                            onClick={() => handleQuickComplete(task)}
+                            className="opacity-0 group-hover:opacity-100 text-green-600 hover:text-green-700 transition-all"
+                            title="Mark as completed"
+                          >
+                            <CheckSquare className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        task.priority === 'high' ? 'bg-red-100 text-red-700 border border-red-200' :
-                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
-                        'bg-green-100 text-green-700 border border-green-200'
-                      }`}>
-                        {task.priority}
-                      </span>
-                      
-                      {task.status === 'completed' && (
-                        <Star className="w-5 h-5 text-yellow-500" />
-                      )}
-                    </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* In Progress Column */}
+                <div 
+                  className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
+                    dragOverColumn === 'in-progress' 
+                      ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' 
+                      : 'border-blue-200 bg-blue-50/50 dark:bg-blue-900/10'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, 'in-progress')}
+                  onDragEnter={() => setDragOverColumn('in-progress')}
+                  onDragLeave={() => setDragOverColumn(null)}
+                >
+                  <h3 className="font-semibold text-blue-700 dark:text-blue-300 mb-3 flex items-center">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                    In Progress ({recentTasks.filter(t => t.status === 'in-progress').length})
+                  </h3>
+                  <div className="space-y-2">
+                    {recentTasks.filter(task => task.status === 'in-progress').map(task => (
+                      <div
+                        key={task._id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, task)}
+                        className="p-3 bg-white dark:bg-gray-700 rounded-lg border border-blue-200 dark:border-blue-600 cursor-move hover:shadow-md transition-all duration-200 group"
+                      >
+                        <h4 className="font-medium text-gray-800 dark:text-white text-sm mb-1">{task.title}</h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          Due: {new Date(task.dueDate).toLocaleDateString()}
+                        </p>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            {task.priority}
+                          </span>
+                          <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-all">
+                            <button
+                              onClick={() => handleQuickPending(task)}
+                              className="text-purple-600 hover:text-purple-700"
+                              title="Move to pending"
+                            >
+                              <Clock className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleQuickComplete(task)}
+                              className="text-green-600 hover:text-green-700"
+                              title="Mark as completed"
+                            >
+                              <CheckSquare className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Completed Column */}
+                <div 
+                  className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
+                    dragOverColumn === 'completed' 
+                      ? 'border-green-400 bg-green-50 dark:bg-green-900/20' 
+                      : 'border-green-200 bg-green-50/50 dark:bg-green-900/10'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, 'completed')}
+                  onDragEnter={() => setDragOverColumn('completed')}
+                  onDragLeave={() => setDragOverColumn(null)}
+                >
+                  <h3 className="font-semibold text-green-700 dark:text-green-300 mb-3 flex items-center">
+                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                    Completed ({recentTasks.filter(t => t.status === 'completed').length})
+                  </h3>
+                  <div className="space-y-2">
+                    {recentTasks.filter(task => task.status === 'completed').map(task => (
+                      <div
+                        key={task._id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, task)}
+                        className="p-3 bg-white dark:bg-gray-700 rounded-lg border border-green-200 dark:border-green-600 cursor-move hover:shadow-md transition-all duration-200 group opacity-75"
+                      >
+                        <h4 className="font-medium text-gray-800 dark:text-white text-sm mb-1 line-through">{task.title}</h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          Completed: {new Date(task.updatedAt).toLocaleDateString()}
+                        </p>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
+                            ✅ Done
+                          </span>
+                          <button
+                            onClick={() => handleQuickPending(task)}
+                            className="opacity-0 group-hover:opacity-100 text-purple-600 hover:text-purple-700 transition-all"
+                            title="Move back to pending"
+                          >
+                            <Clock className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {recentTasks.length === 0 && (
                 <div className="text-center py-12">
-                  <CheckSquare className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <div className="relative mb-6">
+                    <img 
+                      src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=200&h=150&fit=crop&crop=center" 
+                      alt="No tasks"
+                      className="w-24 h-18 sm:w-28 sm:h-20 md:w-32 md:h-24 object-cover rounded-2xl mx-auto opacity-50"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <CheckSquare className="w-12 h-12 text-blue-600" />
+                    </div>
+                  </div>
                   <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">No tasks yet!</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">Create your first task to get started.</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">Create your first task to get started on your productivity journey.</p>
                   <Link
                     to="/tasks"
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -391,6 +515,33 @@ const Dashboard = () => {
                   </Link>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Motivational Section with Image */}
+        <div className="mt-4">
+          <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-white overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+            
+            <div className="grid lg:grid-cols-3 gap-8 items-center relative z-10">
+              <div className="lg:col-span-2">
+                <h3 className="text-2xl font-bold mb-2">
+                  "The secret of getting ahead is getting started."
+                </h3>
+                <p className="text-blue-100 mb-4">- Mark Twain</p>
+                <p className="text-blue-100">
+                  Keep pushing forward! You're doing great with your productivity journey.
+                </p>
+              </div>
+              <div className="lg:col-span-1">
+                <img 
+                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=200&fit=crop&crop=center" 
+                  alt="Motivation"
+                  className="w-full h-24 sm:h-28 md:h-32 object-cover rounded-2xl opacity-80"
+                />
+              </div>
             </div>
           </div>
         </div>

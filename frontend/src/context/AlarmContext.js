@@ -29,13 +29,15 @@ export const AlarmProvider = ({ children }) => {
 
   useEffect(() => {
     if (Array.isArray(alarms)) {
+      console.log('🔄 Setting up alarms:', alarms.length);
       alarms.forEach(alarm => {
         if (alarm.active && !activeTimeouts[alarm._id]) {
+          console.log('✅ Setting timeout for:', alarm.time);
           setupAlarmTimeout(alarm);
         }
       });
     }
-  }, [alarms, activeTimeouts]);
+  }, [alarms]);
 
   const fetchAlarms = async () => {
     try {
@@ -87,9 +89,18 @@ export const AlarmProvider = ({ children }) => {
       alarmDate.setDate(alarmDate.getDate() + 1);
     }
 
-    const timeUntilAlarm = alarmDate.getTime() - now.getTime();
+    let timeUntilAlarm = alarmDate.getTime() - now.getTime();
+    
+    // For testing - if past time, trigger in 5 seconds
+    if (timeUntilAlarm <= 0) {
+      console.log('⚠️ Past alarm time, setting for 5 seconds');
+      timeUntilAlarm = 5000;
+    }
+    
+    console.log('⏰ Alarm will ring in:', Math.round(timeUntilAlarm / 1000), 'seconds');
     
     const timeoutId = setTimeout(() => {
+      console.log('🚨🚨🚨 ALARM RINGING NOW!', alarm);
       setRingingAlarm(alarm);
       playAlarmSound();
     }, timeUntilAlarm);
@@ -156,51 +167,76 @@ export const AlarmProvider = ({ children }) => {
   const AlarmModal = () => {
     if (!ringingAlarm) return null;
 
+    console.log('🔔 Rendering alarm modal for:', ringingAlarm);
+
     return createPortal(
       <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center"
-        style={{ zIndex: 2147483647 }}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 999999999,
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9))',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'auto'
+        }}
       >
-        <div className="bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500 p-1 rounded-3xl animate-pulse">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-md w-full mx-4 p-8 shadow-2xl">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-                <Bell className="w-12 h-12 text-white animate-pulse" />
-              </div>
-              
-              <h2 className="text-4xl font-bold text-red-600 mb-2 animate-pulse">
-                🚨 ALARM! 🚨
-              </h2>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {ringingAlarm.time}
-              </h3>
-              <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                {ringingAlarm.message}
-              </p>
-              
-              <div className="space-y-3">
-                <button
-                  onClick={handleDismiss}
-                  className="w-full px-6 py-4 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 text-lg font-bold transition-all transform hover:scale-105"
-                >
-                  ⏰ Snooze (5 min)
-                </button>
-                
-                <button
-                  onClick={handleRepeat}
-                  className="w-full px-6 py-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 text-lg font-bold transition-all transform hover:scale-105"
-                >
-                  🔁 Repeat Tomorrow
-                </button>
-                
-                <button
-                  onClick={handleStop}
-                  className="w-full px-6 py-4 bg-red-500 text-white rounded-xl hover:bg-red-600 text-lg font-bold transition-all transform hover:scale-105"
-                >
-                  ❌ Stop Alarm
-                </button>
-              </div>
-            </div>
+        <div 
+          style={{
+            background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
+            borderRadius: '24px',
+            padding: '32px',
+            maxWidth: '420px',
+            width: '90%',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            border: '3px solid rgba(59, 130, 246, 0.3)',
+            position: 'relative',
+            zIndex: 999999999,
+            textAlign: 'center'
+          }}
+        >
+          <div style={{ width: '96px', height: '96px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', animation: 'bounce 1s infinite', boxShadow: '0 10px 25px rgba(59, 130, 246, 0.4)' }}>
+            <Bell style={{ width: '48px', height: '48px', color: 'white' }} />
+          </div>
+          
+          <h2 style={{ fontSize: '28px', fontWeight: 'bold', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '8px', animation: 'pulse 2s infinite' }}>
+            ⏰ ALARM TIME! ⏰
+          </h2>
+          <h3 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+            {ringingAlarm.time}
+          </h3>
+          <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '32px', fontWeight: '500' }}>
+            {ringingAlarm.message}
+          </p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button
+              onClick={handleDismiss}
+              style={{ width: '100%', padding: '14px 24px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)', transition: 'all 0.2s' }}
+            >
+              😴 Snooze (5 min)
+            </button>
+            
+            <button
+              onClick={handleRepeat}
+              style={{ width: '100%', padding: '14px 24px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', transition: 'all 0.2s' }}
+            >
+              🔄 Repeat Tomorrow
+            </button>
+            
+            <button
+              onClick={handleStop}
+              style={{ width: '100%', padding: '14px 24px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)', transition: 'all 0.2s' }}
+            >
+              🛑 Stop Alarm
+            </button>
           </div>
         </div>
       </div>,
