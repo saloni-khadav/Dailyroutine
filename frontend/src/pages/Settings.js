@@ -37,6 +37,20 @@ const Settings = () => {
         return;
       }
     }
+    
+    if (newNotificationSetting) {
+      // Request notification permission and show test notification
+      if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          new Notification('Routine Master', {
+            body: 'Notifications are now enabled! You\'ll receive reminders for your tasks and goals.',
+            icon: '/favicon.ico'
+          });
+        }
+      }
+    }
+    
     toast.success(`Notifications ${newNotificationSetting ? 'enabled' : 'disabled'}`);
   };
 

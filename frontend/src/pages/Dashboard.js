@@ -86,6 +86,44 @@ const Dashboard = () => {
     setDraggedTask(task);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', task._id);
+    
+    // Get status-based border color
+    let borderColor = '#dc2626'; // red for pending
+    if (task.status === 'in-progress') borderColor = '#d97706'; // yellow
+    if (task.status === 'completed') borderColor = '#059669'; // darker green
+    
+    // Create white drag image
+    const dragElement = e.target.cloneNode(true);
+    dragElement.style.backgroundColor = '#ffffff';
+    dragElement.style.color = '#1f2937';
+    dragElement.style.border = `2px solid ${borderColor}`;
+    dragElement.style.borderRadius = '12px';
+    dragElement.style.position = 'absolute';
+    dragElement.style.top = '-1000px';
+    dragElement.style.zIndex = '9999';
+    dragElement.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+    dragElement.style.opacity = '1';
+    dragElement.style.transform = 'none';
+    
+    // Remove all styling that might hide content
+    const allElements = dragElement.querySelectorAll('*');
+    allElements.forEach(el => {
+      el.style.textDecoration = 'none';
+      el.style.opacity = '1';
+      el.style.color = '#1f2937';
+    });
+    document.body.appendChild(dragElement);
+    e.dataTransfer.setDragImage(dragElement, e.target.offsetWidth / 2, e.target.offsetHeight / 2);
+    
+    setTimeout(() => {
+      if (document.body.contains(dragElement)) {
+        document.body.removeChild(dragElement);
+      }
+    }, 0);
+    
+    // Fade out original element
+    e.target.style.opacity = '0.3';
+    e.target.style.transform = 'scale(0.95)';
   };
 
   const handleDragOver = (e) => {
@@ -96,6 +134,12 @@ const Dashboard = () => {
   const handleDrop = async (e, targetStatus) => {
     e.preventDefault();
     console.log('Drop event:', targetStatus);
+    
+    // Reset all task elements opacity
+    document.querySelectorAll('[draggable="true"]').forEach(el => {
+      el.style.opacity = '1';
+      el.style.transform = 'scale(1)';
+    });
     
     if (!draggedTask) {
       console.log('No dragged task');
@@ -368,6 +412,10 @@ const Dashboard = () => {
                       key={task._id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, task)}
+                      onDragEnd={(e) => {
+                        e.target.style.opacity = '1';
+                        e.target.style.transform = 'scale(1)';
+                      }}
                       className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700 hover:shadow-lg transition-all duration-300 cursor-move"
                     >
                       <div className="flex items-center space-x-2 sm:space-x-3">
@@ -413,6 +461,10 @@ const Dashboard = () => {
                       key={task._id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, task)}
+                      onDragEnd={(e) => {
+                        e.target.style.opacity = '1';
+                        e.target.style.transform = 'scale(1)';
+                      }}
                       className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-yellow-200 dark:border-yellow-800 hover:border-yellow-300 dark:hover:border-yellow-700 hover:shadow-lg transition-all duration-300 cursor-move"
                     >
                       <div className="flex items-center space-x-3">
@@ -458,6 +510,10 @@ const Dashboard = () => {
                       key={task._id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, task)}
+                      onDragEnd={(e) => {
+                        e.target.style.opacity = '1';
+                        e.target.style.transform = 'scale(1)';
+                      }}
                       className="group relative flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 hover:shadow-lg transition-all duration-300 cursor-move"
                     >
                       <div className="flex items-center space-x-3">
